@@ -95,3 +95,4 @@ export const nestedKey = (obj, key = '') => {
     // Return the result~
     return tmpVal;
 };
+//# sourceMappingURL=key.js.map

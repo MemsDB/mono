@@ -23,3 +23,4 @@ export const createReactiveIndex = (collection, query) => {
     }
     return collection.reactiveIndexed.get(query);
 };
+//# sourceMappingURL=reactive.js.map

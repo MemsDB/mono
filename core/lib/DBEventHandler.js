@@ -17,3 +17,4 @@ export class EventHandler {
         this.func = func;
     }
 }
+//# sourceMappingURL=DBEventHandler.js.map

@@ -17,3 +17,4 @@ export class LocalStorageBackup {
         return true;
     }
 }
+//# sourceMappingURL=index.js.map

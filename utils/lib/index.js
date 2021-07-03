@@ -4,3 +4,4 @@ export { nestedKey } from './key';
 export { populate } from './populate';
 export { runQuery, QueryBuilder } from './query';
 export { updateReactiveIndex, createReactiveIndex } from './reactive';
+//# sourceMappingURL=index.js.map

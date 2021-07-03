@@ -8,12 +8,12 @@ A simple in memory DB - Created to experiment more with typescript and classes
 [![Rate on Openbase](https://badges.openbase.io/js/rating/memsdb.svg)](https://openbase.io/js/memsdb?utm_source=embedded&utm_medium=badge&utm_campaign=rate-badge)
 
 ## Documentation:
-- [Documentation Root](https://brocococonut.github.io/memsdb/)
-- [DB Class Docs](https://brocococonut.github.io/memsdb/classes/db.html)
-- [DBCollection Class Docs](https://brocococonut.github.io/memsdb/classes/dbcollection.html)
-- [DBDoc Class Docs](https://brocococonut.github.io/memsdb/classes/dbdoc.html)
-- [Query Builder Class Docs](https://brocococonut.github.io/memsdb/classes/querybuilder.html)
-- [Population/MemsPL Docs](https://brocococonut.github.io/memsdb/modules.html#populate)
+- [Documentation Root](https://memsdb.github.io/mono/)
+- [DB Class Docs](https://memsdb.github.io/mono/classes/_memsdb_core.db.html)
+- [DBCollection Class Docs](https://memsdb.github.io/mono/classes/_memsdb_core.dbcollection.html)
+- [DBDoc Class Docs](https://memsdb.github.io/mono/classes/_memsdb_core.dbdoc.html)
+- [Query Builder Class Docs](https://memsdb.github.io/mono/classes/_memsdb_utils.querybuilder.html)
+- [Population/MemsPL Docs](https://memsdb.github.io/mono/modules/_memsdb_utils.html#populate)
 
 Initialising a new database:
 ```typescript
@@ -142,4 +142,4 @@ const query = QueryBuilder
   .where('folder.children.[].exists', 'all===to', true)
 ```
 
-Other functions on the database, collections, and documents can be read in the [documentation](https://brocococonut.github.io/memsdb/)
+Other functions on the database, collections, and documents can be read in the [documentation](https://memsdb.github.io/mono/)

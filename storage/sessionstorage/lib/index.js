@@ -21,3 +21,4 @@ export class SessionStorage {
         sessionStorage.removeItem(doc.id);
     }
 }
+//# sourceMappingURL=index.js.map

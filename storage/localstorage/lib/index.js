@@ -20,3 +20,4 @@ export class LocalStorage {
         localStorage.removeItem(doc.id);
     }
 }
+//# sourceMappingURL=index.js.map

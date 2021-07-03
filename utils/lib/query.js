@@ -324,3 +324,4 @@ export class QueryBuilder {
         return QueryBuilder.where('', '&&', queries);
     }
 }
+//# sourceMappingURL=query.js.map

@@ -1,0 +1,260 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>memsdb-docs</title>
+	<meta name="description" content="Documentation for memsdb-docs">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">memsdb-docs</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>memsdb-docs</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#memsdb" id="memsdb" style="color: inherit; text-decoration: none;">
+					<h1>memsdb</h1>
+				</a>
+				<p>A simple in memory DB - Created to experiment more with typescript and classes</p>
+				<p><img src="https://badgen.net/bundlephobia/min/memsdb" alt="minified">
+					<img src="https://badgen.net/bundlephobia/minzip/memsdb" alt="minified + gzip">
+					<img src="https://badgen.net/bundlephobia/dependency-count/memsdb" alt="dependency count">
+					<img src="https://badgen.net/bundlephobia/tree-shaking/memsdb" alt="tree shaking">
+				<a href="https://openbase.io/js/memsdb?utm_source=embedded&amp;utm_medium=badge&amp;utm_campaign=rate-badge"><img src="https://badges.openbase.io/js/rating/memsdb.svg" alt="Rate on Openbase"></a></p>
+				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+					<h2>Documentation:</h2>
+				</a>
+				<ul>
+					<li><a href="https://memsdb.github.io/mono/">Documentation Root</a></li>
+					<li><a href="https://memsdb.github.io/mono/classes/_memsdb_core.db.html">DB Class Docs</a></li>
+					<li><a href="https://memsdb.github.io/mono/classes/_memsdb_core.dbcollection.html">DBCollection Class Docs</a></li>
+					<li><a href="https://memsdb.github.io/mono/classes/_memsdb_core.dbdoc.html">DBDoc Class Docs</a></li>
+					<li><a href="https://memsdb.github.io/mono/classes/_memsdb_utils.querybuilder.html">Query Builder Class Docs</a></li>
+					<li><a href="https://memsdb.github.io/mono/modules/_memsdb_utils.html#populate">Population/MemsPL Docs</a></li>
+				</ul>
+				<p>Initialising a new database:</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">DB</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/core&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">db</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">DB</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;My DB Name&#039;</span><span style="color: #000000">)</span>
+</code></pre>
+				<p>Creating and assigning new collections to the db:</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">DBCollection</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/core&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">comments</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">DBCollection</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">, {</span>
+<span style="color: #000000">  </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;comments&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">structure:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">text:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">by:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">parent:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">})</span>
+</code></pre>
+				<p>Adding documents to an existing collection:</p>
+				<pre><code class="language-typescript"><span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">insertOne</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">text:</span><span style="color: #000000"> </span><span style="color: #A31515">`My fantastic comment`</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">by:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;me&#039;</span>
+<span style="color: #000000">})</span>
+</code></pre>
+				<p>Finding documents in a collection:</p>
+				<pre><code class="language-typescript"><span style="color: #008000">/**</span>
+<span style="color: #008000"> * Find all documents where the `by` field is equal to &#039;me&#039;</span>
+<span style="color: #008000"> */</span>
+<span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">([{</span>
+<span style="color: #000000">  </span><span style="color: #001080">key:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">operation:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">comparison:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;me&#039;</span>
+<span style="color: #000000">}])</span>
+<span style="color: #008000">// Or with the QueryBuilder:</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">QueryBuilder</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/utils&#039;</span>
+
+<span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">(</span><span style="color: #001080">QueryBuilder</span><span style="color: #000000">.</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;me&#039;</span><span style="color: #000000">))</span>
+
+<span style="color: #008000">/**</span>
+<span style="color: #008000"> * Find a document by it&#039;s id</span>
+<span style="color: #008000"> */</span>
+<span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">id</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;50d4047b-6c6d-47e8-b487-42ca2a7a4c00&#039;</span><span style="color: #000000">)</span>
+</code></pre>
+				<p>Full example:</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">DB</span><span style="color: #000000">, </span><span style="color: #001080">DBCollection</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/core&#039;</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">QueryBuilder</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/utils&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">db</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">DB</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;My DB Name&#039;</span><span style="color: #000000">)</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">comments</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">DBCollection</span><span style="color: #000000">(</span><span style="color: #001080">db</span><span style="color: #000000">, {</span>
+<span style="color: #000000">  </span><span style="color: #001080">name:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;comments&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">structure:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">text:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">by:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #001080">parent:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">})</span>
+
+<span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">insertOne</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">text:</span><span style="color: #000000"> </span><span style="color: #A31515">`My fantastic comment`</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">by:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;me&#039;</span>
+<span style="color: #000000">})</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">docs</span><span style="color: #000000"> = </span><span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">([{</span>
+<span style="color: #000000">  </span><span style="color: #001080">key:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">operation:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">comparison:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;me&#039;</span>
+<span style="color: #000000">}])</span>
+<span style="color: #008000">// Or with the QueryBuilder:</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">docs</span><span style="color: #000000"> = </span><span style="color: #001080">comments</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">(</span><span style="color: #001080">QueryBuilder</span><span style="color: #000000">.</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;me&#039;</span><span style="color: #000000">))</span>
+
+<span style="color: #008000">// docs should contain the one comment we added</span>
+</code></pre>
+				<p>The query language is still rather simple but can support the operators: <code>&lt;</code> | <code>&gt;</code> | <code>&lt;=</code> | <code>&gt;=</code> | <code>===</code> | <code>||</code> | <code>includes</code> | <code>isContainedIn</code> | <code>hasAllOf</code> | <code>all&gt;than</code> | <code>all&lt;than</code> | <code>all&gt;=to</code> | <code>all&lt;=to</code> | <code>all===to</code> | <code>some&gt;than</code> | <code>some&lt;than</code> | <code>some&gt;=to</code> | <code>some&lt;=to</code> | <code>some===to</code> - where <code>||</code> runs an OR using an array of <code>Query</code> objects (supports multi-level ORing).
+					Additionally, you can use the length of an array as the &quot;key&quot; to compare values against.
+				If you for example had the following document: </p>
+				<pre><code class="language-json"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #0451A5">&quot;friends&quot;</span><span style="color: #000000">: [</span>
+<span style="color: #000000">    </span><span style="color: #008000">// ...</span>
+<span style="color: #000000">  ]</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>You would be able to query against the length of that array like so:</p>
+				<pre><code class="language-ts"><span style="color: #001080">users</span><span style="color: #000000">.</span><span style="color: #795E26">find</span><span style="color: #000000">(</span><span style="color: #001080">QueryBuilder</span><span style="color: #000000">.</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;friends.length&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">, </span><span style="color: #098658">0</span><span style="color: #000000">))</span>
+</code></pre>
+				<p>An example query object of:</p>
+				<pre><code class="language-typescript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">query</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">key:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">operation:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">comparison:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;me&#039;</span>
+<span style="color: #000000">}</span>
+<span style="color: #008000">// Or with the QueryBuilder:</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">QueryBuilder</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/utils&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">query</span><span style="color: #000000"> = </span><span style="color: #001080">QueryBuilder</span><span style="color: #000000">.</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;by&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;===&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;me&#039;</span><span style="color: #000000">)</span>
+</code></pre>
+				<p>should be read as <code>document.data.by (key to get value of) &#39;===&#39; &#39;me&#39; (value)</code></p>
+				<p>The <code>some===to</code> key (<code>some*</code>, <code>all*</code>) can be used to find similarities between different arrays</p>
+				<p><code>all===to</code> makes sure that all of the specified key is equal to the comparison. This would usually be useful with query keys that specify an array  with objects in it like the following: <code>folder.children.[].exists</code>. In the previous example you&#39;d use <code>all===to</code> to make sure that all child folders of the first level have the property <code>exists</code> and that it&#39;s equal to whatever comparison value you set in the query. Eg.:</p>
+				<pre><code class="language-typescript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">query</span><span style="color: #000000"> = {</span>
+<span style="color: #000000">  </span><span style="color: #001080">key:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;folder.children.[].exists&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">operation:</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;all===to&#039;</span><span style="color: #000000">,</span>
+<span style="color: #000000">  </span><span style="color: #001080">comparison:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span>
+<span style="color: #000000">}</span>
+<span style="color: #008000">// OR using the query builder:</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">QueryBuilder</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@memsdb/utils&#039;</span>
+
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">query</span><span style="color: #000000"> = </span><span style="color: #001080">QueryBuilder</span>
+<span style="color: #000000">  .</span><span style="color: #795E26">where</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;folder.children.[].exists&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;all===to&#039;</span><span style="color: #000000">, </span><span style="color: #0000FF">true</span><span style="color: #000000">)</span>
+</code></pre>
+				<p>Other functions on the database, collections, and documents can be read in the <a href="https://memsdb.github.io/mono/">documentation</a></p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Modules</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_backup_fs.html">@memsdb/backup-<wbr>fs</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_backup_localstorage.html">@memsdb/backup-<wbr>localstorage</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_backup_sessionstorage.html">@memsdb/backup-<wbr>sessionstorage</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_backup_void.html">@memsdb/backup-<wbr>void</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_core.html">@memsdb/core</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_storage_fs.html">@memsdb/storage-<wbr>fs</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_storage_localstorage.html">@memsdb/storage-<wbr>localstorage</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_storage_memory.html">@memsdb/storage-<wbr>memory</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_storage_sessionstorage.html">@memsdb/storage-<wbr>sessionstorage</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_memsdb_utils.html">@memsdb/utils</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

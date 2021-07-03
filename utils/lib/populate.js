@@ -299,3 +299,4 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
     const populated = runPopulate(parsed, docs, _);
     return populated;
 };
+//# sourceMappingURL=populate.js.map

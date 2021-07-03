@@ -17,3 +17,4 @@ export class VoidBackup {
         return true;
     }
 }
+//# sourceMappingURL=index.js.map

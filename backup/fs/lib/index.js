@@ -89,3 +89,4 @@ export class FSBackup {
         return true;
     }
 }
+//# sourceMappingURL=index.js.map

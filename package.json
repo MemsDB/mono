@@ -1,0 +1,34 @@
+{
+  "name": "memsdb-docs",
+  "version": "0.1.0",
+  "description": "Docs for MemsDB",
+  "main": "index.js",
+  "repository": "git@github.com:MemsDB/mono.git",
+  "author": "Jake Lees <brocococonut@gmail.com>",
+  "license": "GNU",
+  "private": false,
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "typedoc": "^0.21.2",
+    "typescript": "^4.3.5"
+  },
+  "scripts": {
+    "build:docs": "typedoc --packages core --packages backup/fs --packages backup/localstorage --packages backup/sessionstorage --packages backup/void --packages storage/fs --packages storage/localstorage --packages storage/sessionstorage --packages storage/memory --packages utils --packages types --includes md/",
+    
+    "build:all": "run-p build:backup build:storage build:core build:utils",
+    "build:backup": "run-p build:backup:* -l",
+    "build:backup:fs": "npx tsc -p backup/fs/tsconfig.json",
+    "build:backup:localstorage": "npx tsc -p backup/localstorage/tsconfig.json",
+    "build:backup:sessionstorage": "npx tsc -p backup/sessionstorage/tsconfig.json",
+    "build:backup:void": "npx tsc -p backup/void/tsconfig.json",
+
+    "build:storage": "run-p build:storage:* -l",
+    "build:storage:fs": "npx tsc -p storage/fs/tsconfig.json",
+    "build:storage:localstorage": "npx tsc -p storage/localstorage/tsconfig.json",
+    "build:storage:sessionstorage": "npx tsc -p storage/sessionstorage/tsconfig.json",
+    "build:storage:memory": "npx tsc -p storage/memory/tsconfig.json",
+
+    "build:core": "npx tsc -p core/tsconfig.json",
+    "build:utils": "npx tsc -p utils/tsconfig.json"
+  }
+}

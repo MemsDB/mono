@@ -16,3 +16,4 @@ export class MemoryStorage {
         doc.pluginData.delete('memoryStorage');
     }
 }
+//# sourceMappingURL=index.js.map

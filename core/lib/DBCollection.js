@@ -153,3 +153,4 @@ export class DBCollection {
         return event.str;
     }
 }
+//# sourceMappingURL=DBCollection.js.map

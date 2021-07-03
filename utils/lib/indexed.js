@@ -60,3 +60,4 @@ export const getOrCreateIndex = ({ doc, query, }) => {
     else
         return normalize(nestedKey(doc.data, key));
 };
+//# sourceMappingURL=indexed.js.map

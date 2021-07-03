@@ -18,3 +18,4 @@ export class SessionStorageBackup {
         return true;
     }
 }
+//# sourceMappingURL=index.js.map
