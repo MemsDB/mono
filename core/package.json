@@ -1,0 +1,32 @@
+{
+  "name": "@memsdb/core",
+  "version": "0.1.0",
+  "description": "A simple embedded document based database with advanced querying, advanced population/tree creation, and multiple storage and backup providers.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [
+    "memory",
+    "database",
+    "json",
+    "query",
+    "data"
+  ],
+  "author": "Jake Lees <@brocococonut>",
+  "license": "ISC",
+  "dependencies": {
+    "@memsdb/backup-void": "^0.1.0",
+    "@memsdb/storage-memory": "^0.1.0",
+    "@memsdb/utils": "^0.1.0",
+    "debug": "^4.3.1",
+    "smoldash": "^0.9.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@memsdb/types": "../types",
+    "@types/debug": "^4.1.6",
+    "@types/uuid": "^8.3.1"
+  }
+}

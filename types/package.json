@@ -1,0 +1,15 @@
+{
+  "name": "@memsdb/types",
+  "version": "0.1.0",
+  "description": "Types shared across MemsDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": false,
+  "devDependencies": {
+    "@memsdb/utils": "^0.1.0"
+  },
+  "author": "Jake Lees <@brocococonut>",
+  "license": "ISC"
+}

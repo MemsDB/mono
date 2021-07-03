@@ -1,0 +1,1 @@
+A collection of types common between the different @memsdb/* modules
