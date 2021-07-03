@@ -12,8 +12,10 @@
   resolved "https://registry.yarnpkg.com/@memsdb/storage-memory/-/storage-memory-0.1.0.tgz#d1c6236fea0dfa31154fb5dea3ca2be26f00dfa8"
   integrity sha512-di9k6/3j74izkn5FOxkZ+5JuQzVeaB/fdmGKmBJrEHyhlpmxdePgkQXdPBxEi/1qlZjku1Yp7zxHnTx7bwxKyA==
 
-"@memsdb/types@../types":
+"@memsdb/types@^0.1.0":
   version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.1.0.tgz#8689140f8f7821697adebc2ac3afbae6b6f31f0c"
+  integrity sha512-SODHsIJbhgAXPOiEwXjYnxHRnPMgKYGlu6+OXC06dCgKlgHSKv/VjLaR8WqU4Sx8QE0s5sZ15YRhrBBnrbrG2g==
 
 "@memsdb/utils@^0.1.0":
   version "0.1.0"
@@ -46,6 +48,11 @@ smoldash@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/smoldash/-/smoldash-0.9.0.tgz#50a7e7a5768a1bf286fd21c08a2b0fbb78d1806e"
   integrity sha512-9697pcbRjPMJ0fS1FKw+wgEFaRJ75nAy/XQy9ifR1D25CBHdxvqxw469Kkd0NZhCjh7Sc1wbwpQQhXrd+xg/7g==
+
+typescript@^4.3.5:
+  version "4.3.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.5.tgz#4d1c37cc16e893973c45a06886b7113234f119f4"
+  integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
 
 uuid@^8.3.2:
   version "8.3.2"
