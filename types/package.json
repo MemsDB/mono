@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/types",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Types shared across MemsDB",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,7 @@
   },
   "private": false,
   "devDependencies": {
+    "@memsdb/core": "^0.1.1",
     "@memsdb/utils": "^0.1.0",
     "@types/debug": "^4.1.6",
     "debug": "^4.3.2"
