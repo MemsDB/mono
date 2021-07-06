@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/storage-localstorage",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Storage layer for storing MemsDB document data fields in the browsers localStorage",
   "main": "lib/index.js",
   "scripts": {
