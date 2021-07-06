@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/backup-sessionstorage",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Backup layer for storing MemsDB backup data in the browsers sessionStorage",
   "main": "lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "@memsdb/types": "^0.1.0",
+    "@memsdb/types": "^0.3.0",
     "typescript": "^4.3.5"
   },
   "keywords": [
