@@ -1,10 +1,15 @@
 {
   "name": "@memsdb/backup-sessionstorage",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Backup layer for storing MemsDB backup data in the browsers sessionStorage",
   "esnext": "lib/index.js",
+  "exports": "./lib/index.js",
   "type": "module",
   "module": "lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p tsconfig.json"
