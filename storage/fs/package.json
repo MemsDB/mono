@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/storage-fs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Storage layer for storing MemsDB document data fields in the filesystem",
   "files": [
     "lib"
@@ -14,7 +14,7 @@
     "build:es": "tsc -p tsconfig.json",
     "build:cjs": "tsc -p tsconfig-cjs.json ",
     "build:types": "tsc -p tsconfig-types.json",
-    "prepublish": "yarn build"
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@memsdb/types": "^0.3.0",
