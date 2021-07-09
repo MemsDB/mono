@@ -1,21 +1,24 @@
 {
   "name": "@memsdb/backup-sessionstorage",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Backup layer for storing MemsDB backup data in the browsers sessionStorage",
-  "esnext": "lib/index.js",
-  "exports": "./lib/index.js",
-  "type": "module",
-  "module": "lib/index.js",
-  "types": "./lib/index.d.ts",
   "files": [
     "lib"
   ],
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/types/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json"
+    "build": "run-p build:es build:cjs build:types",
+    "build:es": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig-cjs.json ",
+    "build:types": "tsc -p tsconfig-types.json",
+    "prepublish": "yarn build"
   },
   "devDependencies": {
     "@memsdb/types": "^0.3.0",
+    "npm-run-all": "^4.1.5",
     "typescript": "^4.3.5"
   },
   "keywords": [
