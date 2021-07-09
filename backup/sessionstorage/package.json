@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/backup-sessionstorage",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Backup layer for storing MemsDB backup data in the browsers sessionStorage",
   "esnext": "lib/index.js",
   "type": "module",
