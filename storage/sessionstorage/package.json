@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/storage-sessionstorage",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Storage layer for storing MemsDB document data fields in the browsers sessionStorage",
   "esnext": "lib/index.js",
   "type": "module",
