@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/backup-fs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Storage layer for storing MemsDB backup data in the filesystem",
   "esnext": "lib/index.js",
   "type": "module",
