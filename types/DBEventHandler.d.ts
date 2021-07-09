@@ -1,11 +1,14 @@
-import type { DBCollection } from '../collection'
-import type { DBDoc } from '../doc'
-import type { Backup } from './backupProvider'
-import type { AddCollectionOpts } from './DB'
-import type { CollectionFindOpts, CollectionInsertOpts } from './Collection'
-import type { DocumentCustomPopulateOpts, DocumentTreeOpts } from './Document'
-import { DB } from '../db'
-import { EventHandler } from '../eventHandler'
+import type {
+  DB as DBType,
+  DBCollection as DBCollectionType,
+  DBAddCollectionOpts,
+  DBDoc as DBDocType,
+  DBCollectionFindOpts,
+  DBCollectionInsertOpts,
+  DBDocCustomPopulateOpts,
+  DBDocTreeOpts,
+} from './Core'
+import { Backup } from './BackupProvider'
 
 /**
  * Fires whenever the db.backup() function is called. Plugins will run BEFORE
@@ -26,12 +29,11 @@ export interface EventDBBackup {
  * @category Database Event
  */
 export interface EventDBHandlerAdded {
-  
   event: 'EventDBHandlerAdded'
   /**
    * A reference to the database itself, useful for handlers that require a reference to the DB
    */
-  db: DB
+  db: DBType
   /**
    * A reference to the handler being added.
    */
@@ -92,12 +94,12 @@ export interface EventDBAddCollection {
   /**
    * A reference to the added collection. Mutate or read as necessary
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
   /**
    * Reference to the opts used for adding a collection to the database.
    * Modifying these options will modify original object
    */
-  opts: AddCollectionOpts
+  opts: DBAddCollectionOpts
 }
 
 /**
@@ -109,7 +111,7 @@ export interface EventDBDeleteCollection {
   /**
    * A reference to the collection about to be deleted.
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
 }
 
 /**
@@ -141,7 +143,7 @@ export interface EventDBEmptyCollection {
   /**
    * A reference to the collection
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
 }
 
 /**
@@ -153,7 +155,7 @@ export interface EventDBEmptyCollectionComplete {
   /**
    * A reference to the collection
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
   /**
    * Whether or not the action was successful
    */
@@ -175,7 +177,7 @@ export interface EventCollectionFind {
    * The options provided to the find function. Mutations to this will modify
    * the results of the find function.
    */
-  opts: CollectionFindOpts
+  opts: DBCollectionFindOpts
 }
 
 /**
@@ -188,12 +190,12 @@ export interface EventCollectionFindComplete {
   /**
    * The options provided to the find function.
    */
-  opts: CollectionFindOpts
+  opts: DBCollectionFindOpts
   /**
    * A reference to the results array returned from the queries. Adjust this
    * to modify what gets returned
    */
-  docs: DBDoc[]
+  docs: DBDocType<any>[]
 }
 
 /**
@@ -208,7 +210,7 @@ export interface EventCollectionInsert {
    * will change what gets written. If you add keys in this step that aren't
    * in the collection schema, they will be omitted from backups.
    */
-  opts: CollectionInsertOpts
+  opts: DBCollectionInsertOpts<any>
 }
 
 /**
@@ -222,15 +224,11 @@ export interface EventCollectionInsertComplete {
    * If you add keys in this step that aren't in the collection schema,
    * they will be omitted from backups.
    */
-  doc: DBDoc
-  /**
-   * Same document as doc, this one won't trigger events when updated though
-   */
-  unlistenedDoc: DBDoc
+  doc: DBDocType<any>
   /**
    * A reference to the containing collection
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
 }
 
 /**
@@ -258,7 +256,7 @@ export interface EventDocumentDelete {
    * A reference to the document before it gets removed from the collection and
    * deleted
    */
-  doc: DBDoc
+  doc: DBDocType<any>
 }
 
 /**
@@ -291,12 +289,12 @@ export interface EventDocumentCustomPopulate {
    * The cloned document that will be modified. Changes to
    * this document won't persist to the original.
    */
-  doc: DBDoc
+  doc: DBDocType<any>
   /**
    * The CustomPopulateQuery object about to be used. Modify this to
    * alter the outcome of the populate function
    */
-  opts: DocumentCustomPopulateOpts
+  opts: DBDocCustomPopulateOpts
 }
 
 /**
@@ -309,12 +307,12 @@ export interface EventDocumentCustomPopulateComplete {
    * The cloned document with the applied mutations. Changes to
    * this document won't persist to the original.
    */
-  doc: DBDoc
+  doc: DBDocType<any>
   /**
    * The CustomPopulateQuery object about to be used. Modify this to
    * alter the outcome of the populate function
    */
-  opts: DocumentCustomPopulateOpts
+  opts: DBDocCustomPopulateOpts
 }
 
 /**
@@ -327,9 +325,9 @@ export interface EventDocumentTree {
    * The cloned document that will be modified. Changes to
    * this document won't persist to the original.
    */
-  doc: DBDoc
+  doc: DBDocType<any>
 
-  opts: DocumentTreeOpts
+  opts: DBDocTreeOpts
 }
 
 /**
@@ -342,9 +340,9 @@ export interface EventDocumentTreeComplete {
    * The cloned document with the applied mutations. Changes to
    * this document don't persist to the original.
    */
-  doc: DBDoc
+  doc: DBDocType<any>
 
-  opts: DocumentTreeOpts
+  opts: DBDocTreeOpts
 }
 
 /**
@@ -356,7 +354,7 @@ export interface EventDocumentClone {
   /**
    * The original document, mutations will persist and will be cloned
    */
-  doc: DBDoc
+  doc: DBDocType<any>
 }
 
 /**
@@ -369,7 +367,7 @@ export interface EventDocumentCloneComplete {
    * The cloned document. Changes to this document won't persist/reflect on the
    * original document
    */
-  doc: DBDoc
+  doc: DBDocType<any>
 }
 
 /**
@@ -381,11 +379,11 @@ export interface EventCollectionDocumentUpdated {
   /**
    * A reference to the modified document
    */
-  doc: DBDoc
+  doc: DBDocType<any>
   /**
    * A reference to the containing collection
    */
-  collection: DBCollection
+  collection: DBCollectionType<any>
 }
 
 /**
@@ -428,3 +426,21 @@ export type EventHandlersType = Record<
   EventName,
   EventHandlerType | EventHandlerType[] | undefined
 >
+
+export declare class EventHandler {
+  /** Event type of this handler */
+  eventType: EventName
+
+  /**
+   * Handler function for this event type.
+   * This function will get called in order of addition to the DB
+   */
+  func: (event: MemsDBEvent) => void
+
+  /**
+   * Create a new EventHandler to handle events in MemsDB
+   * @param eventType MemsDB event type to be handled
+   * @param func Function to run on event
+   */
+  constructor(eventType: EventName, func: (event: MemsDBEvent) => void)
+}

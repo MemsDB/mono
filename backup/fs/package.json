@@ -2,7 +2,9 @@
   "name": "@memsdb/backup-fs",
   "version": "0.3.0",
   "description": "Storage layer for storing MemsDB backup data in the filesystem",
-  "main": "lib/index.js",
+  "esnext": "lib/index.js",
+  "type": "module",
+  "module": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p tsconfig.json"

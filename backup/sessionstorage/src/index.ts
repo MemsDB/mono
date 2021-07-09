@@ -1,4 +1,4 @@
-import { Backup, BackupProvider } from '@memsdb/types/backupProvider'
+import { Backup, BackupProvider } from '@memsdb/types'
 
 const sessionStorage = window.sessionStorage
 

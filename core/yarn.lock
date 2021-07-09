@@ -2,25 +2,20 @@
 # yarn lockfile v1
 
 
-"@memsdb/backup-void@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/backup-void/-/backup-void-0.1.0.tgz#2d1f719f27342bbfa6f601903ff71cd13d1227dc"
-  integrity sha512-EIYK8gAg40vl3KB3xWWPjyFrgiNxsO+0xNhMlXvz1BcAGOGLTS44xfaS12o/IPZhPrU774H0/KbQNg+xZuAt9g==
+"@memsdb/backup-void@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/backup-void/-/backup-void-0.3.0.tgz#78d4a0703a5d710b86dc954d62c9bbc3f8d19b3f"
+  integrity sha512-MyM1g+wymfdjnbcX5F1SGKjW2Xg5+2y3jqaG9iHo3a5PQZdFndml/XUZxY15S3QVD+fC8aWtLj39ZD2AA8RB/g==
 
-"@memsdb/storage-memory@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/storage-memory/-/storage-memory-0.1.0.tgz#d1c6236fea0dfa31154fb5dea3ca2be26f00dfa8"
-  integrity sha512-di9k6/3j74izkn5FOxkZ+5JuQzVeaB/fdmGKmBJrEHyhlpmxdePgkQXdPBxEi/1qlZjku1Yp7zxHnTx7bwxKyA==
+"@memsdb/storage-memory@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/storage-memory/-/storage-memory-0.3.0.tgz#9a444e6f9026e905befc4aa1396cab47e29a7c67"
+  integrity sha512-nxVfmPkd5kVGrCMiW+hRRUl5KZB8KlX1ShFhizMsKV29u0s24yandZOLEPYCUX0uR9D20WPycg7Pn3xN+v5Gqw==
 
-"@memsdb/types@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.1.0.tgz#8689140f8f7821697adebc2ac3afbae6b6f31f0c"
-  integrity sha512-SODHsIJbhgAXPOiEwXjYnxHRnPMgKYGlu6+OXC06dCgKlgHSKv/VjLaR8WqU4Sx8QE0s5sZ15YRhrBBnrbrG2g==
-
-"@memsdb/utils@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/utils/-/utils-0.1.0.tgz#d0305ecd6f763c0cdf582fe32707e166979aa064"
-  integrity sha512-+IMIGscTTVSeRk1sZ/V1xc0DbtDW/lCkuJKyR+bNZCB6ZnOzcNmJjx2bP9dcDUCr0QglV0M+MNIEOPvlxwE9tA==
+"@memsdb/types@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.3.0.tgz#cd34e946eda40b98836fe37af68c2727d8ed198d"
+  integrity sha512-TAJ8B0ZV5ZFQ/ueL6ZE7kMwHwWfjnIK1nPGWcaG7pUeRuF1ydss2ZSV8j0pIMP3TjRv0LdKsdJdeU6yeRyoYWw==
 
 "@types/debug@^4.1.6":
   version "4.1.6"
@@ -33,9 +28,9 @@
   integrity sha512-Y2mHTRAbqfFkpjldbkHGY8JIzRN6XqYRliG8/24FcHm2D2PwW24fl5xMRTVGdrb7iMrwCaIEbLWerGIkXuFWVg==
 
 debug@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.1.tgz#f0d229c505e0c6d8c49ac553d1b13dc183f6b2ee"
-  integrity sha512-doEwdvm4PCeK4K3RQN2ZC2BYUBaxwLARCqZmMjtF8a51J2Rb0xpVloFRnCODwqjpwnAoao4pelN8l3RJdv3gRQ==
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.2.tgz#f0a49c18ac8779e31d4a0c6029dfb76873c7428b"
+  integrity sha512-mOp8wKcvj7XxC78zLgw/ZA+6TSgkoE2C/ienthhRD298T7UNwAg9diBpLRxC0mOezLl4B0xV7M0cCO6P/O0Xhw==
   dependencies:
     ms "2.1.2"
 

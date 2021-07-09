@@ -1,7 +1,11 @@
-import { runQuery, QueryBuilder } from './query'
+import { runQuery } from '../Query'
 
-import type { DBDoc, DBCollection } from '@memsdb/core'
-import type { Query } from '@memsdb/types/query'
+import type {
+  DBDoc as DBDocType,
+  DBCollection as DBCollectionType,
+  Query as QueryType,
+  QueryBuilder as QueryBuilderType,
+} from '@memsdb/types'
 
 /**
  * Set a reactive query on a collection (should be run from the collection, not directly)
@@ -9,11 +13,11 @@ import type { Query } from '@memsdb/types/query'
  * @param collection Collection to update reactive index on
  * @param query Queries to run
  */
-export const updateReactiveIndex = (
-  collection: DBCollection,
-  query: Query[] | QueryBuilder
+export const updateReactiveIndex = <T>(
+  collection: DBCollectionType<T>,
+  query: QueryType[] | QueryBuilderType
 ) => {
-  const ref = collection.reactiveIndexed.get(query) as { docs: DBDoc[] }
+  const ref = collection.reactiveIndexed.get(query) as { docs: DBDocType<T>[] }
 
   ref.docs.length = 0
   ref.docs.push(...runQuery(query, collection, collection.docs))
@@ -25,14 +29,14 @@ export const updateReactiveIndex = (
  * @param collection Collection to create reactive index on
  * @param query Query array to perform
  */
-export const createReactiveIndex = (
-  collection: DBCollection,
-  query: Query[] | QueryBuilder
+export const createReactiveIndex = <T>(
+  collection: DBCollectionType<T>,
+  query: QueryType[] | QueryBuilderType
 ) => {
   if (!collection.reactiveIndexed.has(query)) {
     const docs = runQuery(query, collection, collection.docs)
     collection.reactiveIndexed.set(query, { docs })
   }
 
-  return collection.reactiveIndexed.get(query) as { docs: DBDoc[] }
+  return collection.reactiveIndexed.get(query) as { docs: DBDocType<T>[] }
 }

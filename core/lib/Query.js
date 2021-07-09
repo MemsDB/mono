@@ -1,5 +1,5 @@
-import { nestedKey } from './key';
-import { getOrCreateIndex } from './indexed';
+import { nestedKey } from './utils/NestedKey';
+import { getOrCreateIndex } from './utils/Indexed';
 /**
  * Compare a query to the provided document, ran by runQuery()
  * @ignore
@@ -57,7 +57,7 @@ const compare = (doc, query) => {
             if (!Array.isArray(comp))
                 break;
             if (Array.isArray(val))
-                res = val.every((valT) => comp.includes(valT));
+                res = val.every(valT => comp.includes(valT));
             else
                 return (res = comp.includes(val));
             break;
@@ -65,7 +65,7 @@ const compare = (doc, query) => {
             // Filter out documents that don't have ALL of the comparison values
             if (!Array.isArray(comp))
                 return false;
-            res = comp.every((comparison) => val.includes(comparison));
+            res = comp.every(comparison => val.includes(comparison));
             break;
         case 'all>than':
             res = val.every((valT) => valT > comp);
@@ -157,8 +157,8 @@ export const runQuery = (queryArr, col, seedDocs, nested_, nestedOp_) => {
                     // Inverse the or query
                     if (query.inverse) {
                         // Get an array of all the document IDs for filtering
-                        const idArrOr = tmpOr.map((doc) => doc.id);
-                        docs = docs.filter((doc) => !idArrOr.includes(doc.id));
+                        const idArrOr = tmpOr.map(doc => doc.id);
+                        docs = docs.filter(doc => !idArrOr.includes(doc.id));
                     }
                     // Filter out documents that exist multiple times in the array.
                     else
@@ -171,14 +171,14 @@ export const runQuery = (queryArr, col, seedDocs, nested_, nestedOp_) => {
                     const tmpAnd = runQuery(query.comparison, col, docs, _, '&&');
                     // Handle inversing the results of the AND query
                     if (query.inverse) {
-                        const idArrAnd = tmpAnd.map((doc) => doc.id);
-                        docs = docs.filter((doc) => !idArrAnd.includes(doc.id));
+                        const idArrAnd = tmpAnd.map(doc => doc.id);
+                        docs = docs.filter(doc => !idArrAnd.includes(doc.id));
                     }
                     else
                         docs = tmpAnd;
                     break;
                 default:
-                    docs = docs.filter((doc) => compare(doc, query));
+                    docs = docs.filter(doc => compare(doc, query));
                     break;
             }
         }
@@ -324,4 +324,4 @@ export class QueryBuilder {
         return QueryBuilder.where('', '&&', queries);
     }
 }
-//# sourceMappingURL=query.js.map
+//# sourceMappingURL=Query.js.map

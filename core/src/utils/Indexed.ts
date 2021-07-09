@@ -1,7 +1,5 @@
-import { nestedKey } from './key'
-
-import type { DBDoc } from '@memsdb/core'
-import type { Query } from '@memsdb/types/query'
+import type { DBDoc as DBDocType, Query as QueryType } from '@memsdb/types'
+import { nestedKey } from './NestedKey'
 
 /**
  * Update an index on a document to increase search speeds for nested keys and arrays
@@ -9,11 +7,12 @@ import type { Query } from '@memsdb/types/query'
  * @param key Query key to update index on
  * @ignore
  */
-export const updateDocIndex = (doc: DBDoc, key = '') => {
+export const updateDocIndex = <T>(doc: DBDocType<T>, key = '') => {
   if (doc.collection.db.options.useDynamicIndexes) {
-    doc.indexed[key] = nestedKey(doc.data, key)
+    const nestedKeyValue = nestedKey(doc.data, key)
+    doc.indexed.set(key, nestedKeyValue)
 
-    return doc.indexed[key]
+    return nestedKeyValue
   } else return nestedKey(doc.data, key)
 }
 
@@ -23,12 +22,12 @@ export const updateDocIndex = (doc: DBDoc, key = '') => {
  * @param param0 Index options
  * @ignore
  */
-export const getOrCreateIndex = ({
+export const getOrCreateIndex = <T>({
   doc,
   query,
 }: {
-  doc: DBDoc
-  query: Query
+  doc: DBDocType<T>
+  query: QueryType
 }): any | any[] => {
   const { key, reactiveQuery } = query
 
@@ -53,7 +52,8 @@ export const getOrCreateIndex = ({
     if (key.includes('[]')) {
       // If the key exists in the index list, return that array instead of
       // getting the original which may be however many levels down
-      if (doc.indexed[key]) return doc.indexed[key]
+      const indexed = doc.indexed.get(key)
+      if (indexed) return indexed
       // If it doesn't exist, use the updateDocIndex function to create it and
       // return the results
       else return updateDocIndex(doc, key)

@@ -1,4 +1,4 @@
-import { nestedKey } from './key';
+import { nestedKey } from './NestedKey';
 /**
  * Update an index on a document to increase search speeds for nested keys and arrays
  * @param doc Document to update index on
@@ -7,8 +7,9 @@ import { nestedKey } from './key';
  */
 export const updateDocIndex = (doc, key = '') => {
     if (doc.collection.db.options.useDynamicIndexes) {
-        doc.indexed[key] = nestedKey(doc.data, key);
-        return doc.indexed[key];
+        const nestedKeyValue = nestedKey(doc.data, key);
+        doc.indexed.set(key, nestedKeyValue);
+        return nestedKeyValue;
     }
     else
         return nestedKey(doc.data, key);
@@ -45,8 +46,9 @@ export const getOrCreateIndex = ({ doc, query, }) => {
         if (key.includes('[]')) {
             // If the key exists in the index list, return that array instead of
             // getting the original which may be however many levels down
-            if (doc.indexed[key])
-                return doc.indexed[key];
+            const indexed = doc.indexed.get(key);
+            if (indexed)
+                return indexed;
             // If it doesn't exist, use the updateDocIndex function to create it and
             // return the results
             else
@@ -60,4 +62,4 @@ export const getOrCreateIndex = ({ doc, query, }) => {
     else
         return normalize(nestedKey(doc.data, key));
 };
-//# sourceMappingURL=indexed.js.map
+//# sourceMappingURL=Indexed.js.map

@@ -17,4 +17,4 @@ export const debounce = (callback, waitFor) => {
         return result;
     };
 };
-//# sourceMappingURL=debounce.js.map
+//# sourceMappingURL=Debounce.js.map

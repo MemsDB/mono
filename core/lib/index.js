@@ -1,5 +1,8 @@
-export { EventHandler } from './DBEventHandler';
-export { DB } from './DB';
-export { DBCollection } from './DBCollection';
-export { DBDoc } from './DBDoc';
+export * from './DB';
+export * from './DBCollection';
+export * from './DBDoc';
+export * from './DBEventHandler';
+export * from './Populate';
+export * from './Query';
+export * from './utils/NestedKey';
 //# sourceMappingURL=index.js.map

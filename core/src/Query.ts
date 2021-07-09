@@ -1,8 +1,13 @@
-import { nestedKey } from './key'
-import { getOrCreateIndex } from './indexed'
+import { nestedKey } from './utils/NestedKey'
+import { getOrCreateIndex } from './utils/Indexed'
 
-import type { Query, Operators } from '@memsdb/types/query'
-import type { DBCollection, DBDoc } from '@memsdb/core'
+import type {
+  Query as QueryType,
+  QueryBuilder as QueryBuilderType,
+  Operators,
+  DBDoc as DBDocType,
+  DBCollection as DBCollectionType,
+} from '@memsdb/types'
 import type { Debugger } from 'debug'
 
 /**
@@ -12,13 +17,9 @@ import type { Debugger } from 'debug'
  * @param query Query to run
  * @category Query
  */
-const compare = (doc: DBDoc, query: Query): boolean => {
+const compare = (doc: DBDocType<any>, query: QueryType): boolean => {
   const val = getOrCreateIndex({ doc, query })
-  const {
-    operation: op,
-    comparison: comp,
-    inverse
-  } = query
+  const { operation: op, comparison: comp, inverse } = query
   let res = false
 
   if (
@@ -73,7 +74,7 @@ const compare = (doc: DBDoc, query: Query): boolean => {
     case 'isContainedIn':
       if (!Array.isArray(comp)) break
 
-      if (Array.isArray(val)) res = val.every((valT) => comp.includes(valT))
+      if (Array.isArray(val)) res = val.every(valT => comp.includes(valT))
       else return (res = comp.includes(val))
 
       break
@@ -81,7 +82,7 @@ const compare = (doc: DBDoc, query: Query): boolean => {
       // Filter out documents that don't have ALL of the comparison values
       if (!Array.isArray(comp)) return false
 
-      res = comp.every((comparison) => val.includes(comparison))
+      res = comp.every(comparison => val.includes(comparison))
       break
     case 'all>than':
       res = val.every((valT: any) => valT > comp)
@@ -129,21 +130,21 @@ const compare = (doc: DBDoc, query: Query): boolean => {
  * @category Query
  */
 export const runQuery = (
-  queryArr: Query[] | QueryBuilder,
-  col: DBCollection,
-  seedDocs: DBDoc[],
+  queryArr: QueryType[] | QueryBuilderType,
+  col: DBCollectionType<any>,
+  seedDocs: DBDocType<any>[],
   nested_?: Debugger,
   nestedOp_?: Operators
-): DBDoc[] => {
-  let queries: Query[] = []
+): DBDocType<any>[] => {
+  let queries: QueryType[] = []
   // Debugger variable
   const _ = nested_
     ? nested_.extend(`<query>${nestedOp_}`)
     : col.col_.extend('query')
 
   if (queryArr.constructor.name === 'QueryBuilder') {
-    queries = (<QueryBuilder>queryArr).queries
-  } else queries = queryArr as Query[]
+    queries = (<QueryBuilderType>queryArr).queries
+  } else queries = queryArr as QueryType[]
 
   /* DEBUG */ _(
     'Querying collection `%s`. %d queries left to execute',
@@ -151,7 +152,7 @@ export const runQuery = (
     queries.length
   )
 
-  return queries.reduce<DBDoc[]>((docs, query, i, queries) => {
+  return queries.reduce<DBDocType<any>[]>((docs, query, i, queries) => {
     // Return filtered documents if there are none left, or if the query array is empty
     if (docs.length === 0) {
       /* DEBUG */ _(
@@ -184,10 +185,10 @@ export const runQuery = (
           // Run multiple queries and combine the results of all of them
 
           // Create a temporary array for the documents for filtering later on
-          let tmpOr: DBDoc[] = []
+          let tmpOr: DBDocType<any>[] = []
 
           // Map over the comparison array of queries and run them
-          query.comparison.map((orQuery: Query) =>
+          query.comparison.map((orQuery: QueryType) =>
             tmpOr.push(
               // Push all the results to the temp array
               ...runQuery(
@@ -210,9 +211,9 @@ export const runQuery = (
           // Inverse the or query
           if (query.inverse) {
             // Get an array of all the document IDs for filtering
-            const idArrOr = tmpOr.map((doc) => doc.id)
+            const idArrOr = tmpOr.map(doc => doc.id)
 
-            docs = docs.filter((doc) => !idArrOr.includes(doc.id))
+            docs = docs.filter(doc => !idArrOr.includes(doc.id))
           }
           // Filter out documents that exist multiple times in the array.
           else docs = [...new Set(tmpOr)]
@@ -223,7 +224,7 @@ export const runQuery = (
 
           // Run an && query (what would go within an || query)
           const tmpAnd = runQuery(
-            <Query[] | QueryBuilder>query.comparison,
+            <QueryType[] | QueryBuilder>query.comparison,
             col,
             docs,
             _,
@@ -232,14 +233,14 @@ export const runQuery = (
 
           // Handle inversing the results of the AND query
           if (query.inverse) {
-            const idArrAnd = tmpAnd.map((doc) => doc.id)
+            const idArrAnd = tmpAnd.map(doc => doc.id)
 
-            docs = docs.filter((doc) => !idArrAnd.includes(doc.id))
+            docs = docs.filter(doc => !idArrAnd.includes(doc.id))
           } else docs = tmpAnd
 
           break
         default:
-          docs = docs.filter((doc) => compare(doc, query))
+          docs = docs.filter(doc => compare(doc, query))
           break
       }
     }
@@ -255,7 +256,7 @@ export const runQuery = (
   }, seedDocs)
 }
 
-type WhereCallback = (query: QueryBuilder) => QueryBuilder
+type WhereCallback = (query: QueryBuilderType) => QueryBuilderType
 
 /**
  * Helper function to easily generate queries
@@ -332,8 +333,8 @@ type WhereCallback = (query: QueryBuilder) => QueryBuilder
  * ```
  * @category Query
  */
-export class QueryBuilder {
-  queries: Query[] = []
+export class QueryBuilder implements QueryBuilderType {
+  queries: QueryType[] = []
 
   constructor() {}
 
@@ -371,7 +372,7 @@ export class QueryBuilder {
     operation: Operators,
     comparison: any,
     inverse: boolean = false
-  ) {
+  ): QueryBuilderType {
     return new QueryBuilder().where(key, operation, comparison, inverse)
   }
 
@@ -379,7 +380,7 @@ export class QueryBuilder {
    * Generate a nested || query
    * @param queryFunc callback for generating || queries with a nested QueryBuilder
    */
-  orWhere(queryFunc: WhereCallback) {
+  orWhere(queryFunc: WhereCallback): QueryBuilderType {
     const { queries } = queryFunc(new QueryBuilder())
 
     return this.where('', '||', queries)
@@ -389,7 +390,7 @@ export class QueryBuilder {
    * Generate a nested || query
    * @param queryFunc callback for generating || queries with a nested QueryBuilder
    */
-  static orWhere(queryFunc: WhereCallback) {
+  static orWhere(queryFunc: WhereCallback): QueryBuilderType {
     const { queries } = queryFunc(new QueryBuilder())
 
     return QueryBuilder.where('', '||', queries)
@@ -399,7 +400,7 @@ export class QueryBuilder {
    * Generate && queries for nesting within || queries
    * @param queryFunc callback for generating queries with a nested QueryBuilder
    */
-  andWhere(queryFunc: WhereCallback) {
+  andWhere(queryFunc: WhereCallback): QueryBuilderType {
     const { queries } = queryFunc(new QueryBuilder())
 
     return this.where('', '&&', queries)
@@ -409,10 +410,9 @@ export class QueryBuilder {
    * Generate && queries for nesting within || queries
    * @param queryFunc callback for generating queries with a nested QueryBuilder
    */
-  static andWhere(queryFunc: WhereCallback) {
+  static andWhere(queryFunc: WhereCallback): QueryBuilderType {
     const { queries } = queryFunc(new QueryBuilder())
 
     return QueryBuilder.where('', '&&', queries)
   }
 }
-

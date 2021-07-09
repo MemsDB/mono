@@ -1,4 +1,4 @@
-import { runQuery } from './query';
+import { runQuery } from '../Query';
 /**
  * Set a reactive query on a collection (should be run from the collection, not directly)
  * @ignore
@@ -23,4 +23,4 @@ export const createReactiveIndex = (collection, query) => {
     }
     return collection.reactiveIndexed.get(query);
 };
-//# sourceMappingURL=reactive.js.map
+//# sourceMappingURL=ReactiveIndex.js.map

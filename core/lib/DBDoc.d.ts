@@ -1,29 +1,23 @@
 /// <reference types="debug" />
-import type { DBCollection } from './DBCollection';
-import type { DocumentCustomPopulateOpts, DocumentTreeOpts } from '@memsdb/types/Document';
-import type { MemsDBEvent } from '@memsdb/types/events';
+import type { DBDoc as DBDocType, DBCollection as DBCollectionType, DBDocCustomPopulateOpts, DBDocTreeOpts, MemsDBEvent } from '@memsdb/types';
 /**
  * Class for creating structured documents
  * @category Core
  */
-export declare class DBDoc {
+export declare class DBDoc<T> implements DBDocType<T> {
     /** Document id */
     id: string;
-    private isCloned;
+    isCloned: boolean;
     _createdAt: number;
     _updatedAt: number;
     /** Debugger variable */
     readonly doc_: debug.Debugger;
     /** Reference to the parent collection */
-    readonly collection: DBCollection;
+    readonly collection: DBCollectionType<T>;
     /** Reference to indexed data for repeated deep data matching */
-    indexed: {
-        [key: string]: any | any[];
-    };
+    indexed: DBDocType<T>['indexed'];
     /** Object for any plugin related data */
-    _pluginData: {
-        [key: string]: any;
-    };
+    _pluginData: DBDocType<T>['_pluginData'];
     /**
      * Construct a new Document with the collections schema and any provided data
      * @param data Data to be assigned to the document schema
@@ -31,7 +25,7 @@ export declare class DBDoc {
      */
     constructor(data: {
         [key: string]: any;
-    }, collection: DBCollection, id?: string, isCloned?: boolean);
+    }, collection: DBCollectionType<T>, id?: string, isCloned?: boolean);
     private updateIndexes;
     /**
      * The data of the document as provided by the storage provider
@@ -86,7 +80,7 @@ export declare class DBDoc {
      * @param filter Filter unspecified keys from the populated documents
      * @returns Cloned version of this document
      */
-    populate(populateQuery: string, filter?: boolean): any;
+    populate(populateQuery: string, filter?: boolean): DBDoc<T>;
     /**
      * Populate the document with another document that matches the query.
      * This will return a copy of the document and not a reference to the
@@ -96,18 +90,18 @@ export declare class DBDoc {
      * populate (`doc.populate(...)`) function instead.
      * @param opts Options for the populate. Things like the target field and query don't have to be set
      */
-    customPopulate(opts: DocumentCustomPopulateOpts): DBDoc;
+    customPopulate(opts: DBDocCustomPopulateOpts): DBDoc<T>;
     /**
      * Populate a tree of documents. It's recommended you use the provided
      * populate (`doc.populate(...)`) function instead.
      * @param opts Options for making a tree from the provided document
      * @returns A cloned version of this doc that has the data field formatted into a tree
      */
-    tree(opts?: DocumentTreeOpts): DBDoc;
+    tree(opts?: DBDocTreeOpts): DBDoc<T>;
     /**
      * Duplicate this document, making mutations to it not affect the original
      */
-    clone(): DBDoc;
+    clone(): DBDoc<T>;
     /**
      * Emit an event to the attached database
      * @param event Event to emit

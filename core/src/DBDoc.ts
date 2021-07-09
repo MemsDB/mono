@@ -1,23 +1,28 @@
 import { v4 } from 'uuid'
 import { cloneDeep, merge } from 'smoldash'
-import { nestedKey, updateReactiveIndex, populate, debounce, updateDocIndex } from '@memsdb/utils'
+import { updateDocIndex } from './utils/Indexed'
+import { updateReactiveIndex } from './utils/ReactiveIndex'
+import { nestedKey } from './utils/NestedKey'
+import { debounce } from './utils/Debounce'
+import { populate } from './Populate'
 
-import type { DBCollection } from './DBCollection'
 import type {
-  DocumentCustomPopulateOpts,
-  DocumentTreeOpts,
-} from '@memsdb/types/Document'
-import type { MemsDBEvent } from '@memsdb/types/events'
+  DBDoc as DBDocType,
+  DBCollection as DBCollectionType,
+  DBDocCustomPopulateOpts,
+  DBDocTreeOpts,
+  MemsDBEvent
+} from '@memsdb/types'
 
 /**
  * Class for creating structured documents
  * @category Core
  */
-export class DBDoc {
+export class DBDoc<T> implements DBDocType<T> {
   /** Document id */
   id: string
 
-  private isCloned: boolean = false
+  isCloned: boolean = false
 
   _createdAt: number = Date.now()
   _updatedAt: number = Date.now()
@@ -25,15 +30,13 @@ export class DBDoc {
   /** Debugger variable */
   readonly doc_: debug.Debugger
   /** Reference to the parent collection */
-  readonly collection: DBCollection
+  readonly collection: DBCollectionType<T>
 
   /** Reference to indexed data for repeated deep data matching */
-  indexed: {
-    [key: string]: any | any[]
-  } = {}
+  indexed: DBDocType<T>['indexed'] = new Map()
 
   /** Object for any plugin related data */
-  _pluginData: { [key: string]: any } = {}
+  _pluginData: DBDocType<T>['_pluginData'] = new Map()
 
   /**
    * Construct a new Document with the collections schema and any provided data
@@ -42,7 +45,7 @@ export class DBDoc {
    */
   constructor(
     data: { [key: string]: any },
-    collection: DBCollection,
+    collection: DBCollectionType<T>,
     id = v4(),
     isCloned = false
   ) {
@@ -69,7 +72,7 @@ export class DBDoc {
     this._updatedAt = Date.now()
     if (Object.keys(this.indexed).length > 0) {
       for (const key in this.indexed) {
-        updateDocIndex(this, key)
+        updateDocIndex<T>(this as DBDocType<T>, key)
         this.collection.col_('Updated index "%s" for document %s', key, this.id)
       }
     }
@@ -110,7 +113,7 @@ export class DBDoc {
 
   /**
    * Set the value of a key in the doc to a specified value.
-   * 
+   *
    * **This should only be done on shallow key values**, lest you want keys like
    * 'key1.key2.key3' as object keys in your data
    * @param key Key to set the value of
@@ -136,7 +139,7 @@ export class DBDoc {
 
   /**
    * Set the root of the data object.
-   * 
+   *
    * This will completely replace the data object
    * @param data Data to set
    */
@@ -159,7 +162,7 @@ export class DBDoc {
      * @returns Data from the plugin
      */
     get: (plugin: string) => {
-      return this._pluginData[plugin]
+      return this._pluginData.get(plugin)
     },
     /**
      * Set/replace the data object for a plugin
@@ -167,14 +170,14 @@ export class DBDoc {
      * @param data Data to replace the plugin data with
      */
     set: (plugin: string, data: any) => {
-      this._pluginData[plugin] = data
+      this._pluginData.set(plugin, data)
     },
     /**
      * Delete the data object of a specific plugin
      * @param plugin Plugin name to delete data of
      */
     delete: (plugin: string) => {
-      delete this._pluginData[plugin]
+      this._pluginData.delete(plugin)
     },
   }
 
@@ -226,22 +229,22 @@ export class DBDoc {
    * @param filter Filter unspecified keys from the populated documents
    * @returns Cloned version of this document
    */
-  populate(populateQuery: string, filter = false) {
-    const [populated] = populate(this.collection, [this], populateQuery, filter)
+  populate(populateQuery: string, filter = false): DBDoc<T> {
+    const [populated] = populate<T>(this.collection, [this], populateQuery, filter)
 
-    return populated
+    return populated as DBDoc<T>
   }
 
   /**
    * Populate the document with another document that matches the query.
    * This will return a copy of the document and not a reference to the
    * original.
-   * 
+   *
    * It's recommended you use the provided
    * populate (`doc.populate(...)`) function instead.
    * @param opts Options for the populate. Things like the target field and query don't have to be set
    */
-  customPopulate(opts: DocumentCustomPopulateOpts) {
+  customPopulate(opts: DBDocCustomPopulateOpts) {
     // Debugger variable
     const populate_ = this.doc_.extend('customPopulate')
 
@@ -318,7 +321,7 @@ export class DBDoc {
    * @param opts Options for making a tree from the provided document
    * @returns A cloned version of this doc that has the data field formatted into a tree
    */
-  tree(opts: DocumentTreeOpts = {}) {
+  tree(opts: DBDocTreeOpts = {}) {
     opts = {
       populations: [],
       maxDepth: 0,
@@ -363,7 +366,7 @@ export class DBDoc {
         if (opts.maxDepth && <number>opts.currentDepth <= opts.maxDepth)
           doc.set(
             q.destinationField,
-            children.map((child: DBDoc) =>
+            children.map((child: DBDoc<T>) =>
               child.tree({
                 ...opts,
                 currentDepth: <number>opts.currentDepth + 1,

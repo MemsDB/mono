@@ -1,5 +1,4 @@
-import { existsSync, mkdirSync } from 'fs';
-import { readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, rmSync, existsSync, mkdirSync, } from 'fs';
 import { join } from 'path';
 /**
  * Backup MemsDB collections to the filesystem
@@ -22,7 +21,7 @@ export class FSBackup {
      */
     load() {
         const dirListing = readdirSync(this.saveDirectory);
-        const currentFiles = dirListing.filter((file) => file.endsWith('.memsdb'));
+        const currentFiles = dirListing.filter(file => file.endsWith('.memsdb'));
         const sorted = currentFiles.sort().reverse();
         if (sorted.length === 0)
             return {};
@@ -77,11 +76,11 @@ export class FSBackup {
         try {
             const dirListing = readdirSync(this.saveDirectory);
             const currentFiles = dirListing
-                .filter((file) => file.endsWith('.memsdb'))
+                .filter(file => file.endsWith('.memsdb'))
                 .sort()
                 .reverse();
             const toDelete = currentFiles.splice(this.backupLimit);
-            toDelete.map((file) => rmSync(join(this.saveDirectory, file)));
+            toDelete.map(file => rmSync(join(this.saveDirectory, file)));
         }
         catch (err) {
             console.error(err);

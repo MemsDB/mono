@@ -1,32 +1,22 @@
 import debug from 'debug';
-import type { DBCollection } from './DBCollection';
-import type { EventHandler } from './DBEventHandler';
-import type { BackupProvider } from '@memsdb/types/backupProvider';
-import type { EventHandlersType, MemsDBEvent } from '@memsdb/types/events';
-import type { AddCollectionOpts } from '@memsdb/types/DB';
-import type { StorageProvider } from '@memsdb/types/storageProvider';
+import type { DB as DBType, DBCollection as DBCollectionType, StorageProvider as StorageProviderType, BackupProvider, MemsDBEvent, EventHandler, EventHandlersType } from '@memsdb/types';
 /**
  * Database constructor containing all the initialised collections
  * @category Core
  */
-export declare class DB {
+export declare class DB implements DBType {
     /** Key based object containing all the collections */
     readonly name: string;
-    collections: {
-        [key: string]: DBCollection;
-    };
+    collections: DBType['collections'];
     /** Debugger variable */
     readonly db_: debug.Debugger;
-    options: {
-        useDynamicIndexes: boolean;
-        backupProvider: BackupProvider;
-    };
+    options: DBType['options'];
     /**
      * @ignore
      * List of event handlers
      */
     private eventHandlers;
-    readonly storageEngine: StorageProvider;
+    readonly storageEngine: StorageProviderType<any>;
     /**
      * Construct a new in memory db with the provided collection references
      * @param name Name of database
@@ -49,7 +39,7 @@ export declare class DB {
         /**
          * Storage provider for document data
          */
-        storageEngine?: StorageProvider;
+        storageEngine?: StorageProviderType<any>;
     });
     /**
      * Add an EventHandler class to the DB
@@ -65,18 +55,20 @@ export declare class DB {
      * Return a specified collection by name
      * @param name Collection name to select
      */
-    c(name: string): DBCollection;
+    c(name: string): DBCollectionType<any> | undefined;
     /**
      * Alias of this.c() - Returns a specified collection
      * @param name Name of collection to retrieve
      */
-    collection(name: string): DBCollection;
+    collection(name: string): DBCollectionType<any> | undefined;
     /**
      * Add a new collection to the DB. It won't replace a collection unless you specify to
      * @param collection Collection to add to the db
      * @param replace Replace the specified collection if it exists
      */
-    addCollection(collection: DBCollection, opts?: AddCollectionOpts): DBCollection;
+    addCollection(collection: DBCollectionType<any>, opts?: {
+        replace: boolean;
+    }): DBCollectionType<any>;
     /**
      * Delete a collection and all its documents
      * @param name Collection name to delete

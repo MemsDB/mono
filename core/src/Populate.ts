@@ -5,17 +5,25 @@
  */
 import { v4 } from 'uuid'
 
-import { nestedKey } from './key'
+import { nestedKey } from './utils/NestedKey'
+import { QueryBuilder } from './Query'
 
-import type { DB, DBCollection, DBDoc } from '@memsdb/core'
+import type {
+  DB as DBType,
+  DBCollection as DBCollectionType,
+  DBDoc as DBDocType,
+} from '@memsdb/types'
 import type { Debugger } from 'debug'
 
 export interface PopulateQuery {
   key: string
-  ref?: DBCollection
+  ref?: DBCollectionType<any>
   children?: PopulateQuery[]
   isArr?: boolean
+  remote?: string
 }
+
+type TokenType = 'key' | 'ref' | 'remote'
 
 /**
  * Tokenify a string array into a usable token array for MemsPL
@@ -46,6 +54,8 @@ const tokenify = (strArr: string[] = [], tokenArr: string[] = []): string[] => {
       case '>':
       case '{':
       case '}':
+      case '(':
+      case ')':
         if (token !== '') pushAndReset()
         tokenArr.push(char)
         continue
@@ -84,7 +94,7 @@ const createQueries = (
   tokenArr: string[] = [],
   cur: { [key: string]: any } = {},
   queries: { [key: string]: any }[] = [],
-  db: DB,
+  db: DBType,
   __: Debugger
 ): PopulateQuery[] => {
   // If cur.key is set, push the cur query to the array and reset cur
@@ -94,7 +104,7 @@ const createQueries = (
   }
 
   // Handle what key (either key or ref) to set the token to in the query
-  let nextTokenType = 'key'
+  let nextTokenType: TokenType = 'key'
 
   loop: while (tokenArr.length > 0) {
     const token = tokenArr.shift()
@@ -112,6 +122,17 @@ const createQueries = (
         nextTokenType = 'key'
         continue
 
+      // Start population of array from a remote key
+      case '(':
+        /* DEBUG */ __('--%s--, Opening remote key', token)
+        nextTokenType = 'remote'
+        continue
+
+      // End population of remote key
+      case ')':
+        /* DEBUG */ __('--%s--, Closing remote key')
+        continue
+
       // Start child queries
       case '[':
       case '{':
@@ -123,13 +144,7 @@ const createQueries = (
         )
         cur.isArr = token === '[' ? true : false
         // cur.children = []
-        cur.children = createQueries(
-          tokenArr,
-          {},
-          [],
-          db,
-          __.extend(cur.key)
-        )
+        cur.children = createQueries(tokenArr, {}, [], db, __.extend(cur.key))
 
         pushAndReset()
 
@@ -164,8 +179,15 @@ const createQueries = (
         }
 
         // Set the ref or key to the current token
-        cur[nextTokenType] =
-          nextTokenType === 'ref' ? db.collections[token as string] : token
+        switch (nextTokenType) {
+          case 'key':
+          case 'remote':
+            cur[nextTokenType] = token
+            break
+          case 'ref':
+            cur[nextTokenType] = db.collections.get(token as string)
+            break
+        }
 
         // Continue the while loop when if there are:
         // - More tokens
@@ -212,7 +234,7 @@ const createQueries = (
  */
 const ParseMemsPL = (
   query = '',
-  rootCollection: DBCollection,
+  rootCollection: DBCollectionType<any>,
   _: Debugger
 ): PopulateQuery[] => {
   const __ = _.extend('ParseMemsPL')
@@ -261,21 +283,21 @@ const ParseMemsPL = (
  * ```
  * [[include:populate.md]]
  */
-export const populate = (
-  rootCollection: DBCollection,
-  docs: DBDoc[],
+export const populate = <T>(
+  rootCollection: DBCollectionType<T>,
+  docs: DBDocType<T>[],
   populateQuery: string,
   filter = false
-): DBDoc[] => {
+): DBDocType<T>[] => {
   const _ = rootCollection.col_.extend('populate')
   const parsed = ParseMemsPL(populateQuery, rootCollection, _)
 
   _('population formatted, running recursive populate')
 
-  const filterDoc = (doc: DBDoc, keys: string[]) => {
-    const toRemove = Object.keys(doc.data).filter((key) => !keys.includes(key))
+  const filterDoc = (doc: DBDocType<any>, keys: string[]) => {
+    const toRemove = Object.keys(doc.data).filter(key => !keys.includes(key))
 
-    toRemove.forEach((key) => delete doc.data[key])
+    toRemove.forEach(key => delete doc.data[key])
   }
 
   /**
@@ -285,15 +307,15 @@ export const populate = (
    */
   const runPopulate = (
     queries: PopulateQuery[],
-    docsOrig: DBDoc[],
+    docsOrig: DBDocType<any>[],
     pop_: Debugger
   ) => {
     const runPop_ = pop_.extend(`<runPopulate>${v4()}`)
     // Duplicate all the original documents so as to avoid mutating the originals with references to the copies
-    const duped = docsOrig.map((doc) => doc.clone())
+    const duped = docsOrig.map(doc => doc.clone())
     /* DEBUG */ runPop_('Documents duped')
 
-    const keysList = queries.map((query) => query.key)
+    const keysList = queries.map(query => query.key)
 
     runPop_('List of keys to keep on document: %O', keysList)
 
@@ -306,7 +328,7 @@ export const populate = (
       /* DEBUG */ runPop_(
         'Looping over duplicated docs to run population queries on'
       )
-      duped.forEach((doc) => {
+      duped.forEach(doc => {
         let nestedKeyVal: any
         if (query) {
           switch (query.key) {
@@ -314,10 +336,10 @@ export const populate = (
             case '_updatedAt':
             case '_createdAt':
               nestedKeyVal = doc[query.key]
-              break;
+              break
             default:
               nestedKeyVal = nestedKey(doc.data, query.key)
-              break;
+              break
           }
         }
 
@@ -342,15 +364,14 @@ export const populate = (
               } else {
                 /* DEBUG */ runPop_('No provided nestedKeyVal')
               }
-              doc.set(query.key, runPopulate(
-                query.children,
-                childDocs,
-                runPop_
-              ))
+              doc.set(
+                query.key,
+                runPopulate(query.children, childDocs, runPop_)
+              )
             }
             // Otherwise set the key to the first result of a populate query
             else {
-              /* DEBUG */ runPop_('Query isn\'t on an array')
+              /* DEBUG */ runPop_("Query isn't on an array")
               // Find the document
               const childDoc = query.ref.id(nestedKeyVal)
 
@@ -374,15 +395,18 @@ export const populate = (
             /* DEBUG */ runPop_('No children')
             // Handle if the key is an array of ids or not
             if (query.isArr || Array.isArray(nestedKeyVal)) {
-              doc.set(query.key,nestedKeyVal.map((id: string) => {
-                if (query.ref) {
-                  const childDoc = query.ref.id(id)
+              doc.set(
+                query.key,
+                nestedKeyVal.map((id: string) => {
+                  if (query.ref) {
+                    const childDoc = query.ref.id(id)
 
-                  if (childDoc) return childDoc
-                }
+                    if (childDoc) return childDoc
+                  }
 
-                return id
-              }))
+                  return id
+                })
+              )
             }
             // Otherwise just do the single population
             else {
@@ -393,6 +417,13 @@ export const populate = (
           }
         } else {
           /* DEBUG */ runPop_('No ref')
+        }
+
+        if (query?.remote && query?.ref) {
+          doc.set(
+            query.key,
+            query.ref.find(QueryBuilder.where(query.remote, '===', doc.id))
+          )
         }
 
         if (filter) {

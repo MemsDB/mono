@@ -1,4 +1,4 @@
-import { Backup, BackupProvider } from '@memsdb/types/backupProvider';
+import { Backup, BackupProvider } from '@memsdb/types';
 interface FSBackupOpts {
     /**
      * What directory to save the files to, defaults to './'

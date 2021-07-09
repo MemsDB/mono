@@ -1,5 +1,6 @@
+import { runQuery } from './Query';
+import { updateReactiveIndex, createReactiveIndex } from './utils/ReactiveIndex';
 import { DBDoc } from './DBDoc';
-import { runQuery, updateReactiveIndex, createReactiveIndex } from '@memsdb/utils';
 /**
  * Class for creating collections of structured documents
  * @category Core
@@ -17,8 +18,8 @@ export class DBCollection {
         this.docs = [];
         this.name = schema.name;
         this.col_ = db.db_.extend(`<col>${schema.name}`);
-        db.addCollection(this, { replace: true });
         this.db = db;
+        this.db.addCollection(this, { replace: true });
     }
     /**
      * Find a specific document by its id
@@ -26,7 +27,7 @@ export class DBCollection {
      */
     id(idStr) {
         /* DEBUG */ this.col_('Finding document by id `%s`', idStr);
-        const doc = this.docs.find((doc) => doc.id === idStr);
+        const doc = this.docs.find(doc => doc.id === idStr);
         /* DEBUG */ this.col_('Document found for id:`%s` %s', idStr, doc ? 'true' : 'false');
         return doc;
     }
@@ -37,7 +38,8 @@ export class DBCollection {
      *    collection under collection.reactive[queryArr]
      * @category Query
      */
-    find(opts = { queries: [], reactive: false }) {
+    find(opts = {}) {
+        const { queries = [], reactive = false } = opts;
         /* DEBUG */ this.col_('Starting find query');
         let docs = [];
         /* DEBUG */ this.col_('Emitting event "EventCollectionFind"');
@@ -45,16 +47,16 @@ export class DBCollection {
             event: 'EventCollectionFind',
             opts,
         });
-        if (!opts.queries) {
+        if (!queries) {
             /* DEBUG */ this.col_('No query specified, using empty array');
             docs = runQuery([], this, this.docs);
         }
-        else if (opts.reactive) {
-            createReactiveIndex(this, opts.queries);
-            docs = runQuery(opts.queries, this, this.docs);
+        else if (reactive) {
+            createReactiveIndex(this, queries);
+            docs = runQuery(queries, this, this.docs);
         }
         else {
-            docs = runQuery(opts.queries, this, this.docs);
+            docs = runQuery(queries, this, this.docs);
         }
         /* DEBUG */ this.col_('Emitting event "EventCollectionFindComplete"');
         this.emitEvent({
@@ -101,7 +103,6 @@ export class DBCollection {
         this.emitEvent({
             event: 'EventCollectionInsertComplete',
             doc: newDoc,
-            unlistenedDoc: newDoc,
             collection: this,
         });
         /* DEBUG */ this.col_('Document: %s, pushed to collection', newDoc.id);

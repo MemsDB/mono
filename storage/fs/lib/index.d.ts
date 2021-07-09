@@ -1,10 +1,9 @@
-import { DB, DBDoc } from '@memsdb/core';
-import { Data, StorageProvider } from '@memsdb/types/storageProvider';
+import { StorageProvider, DB, DBDoc } from '@memsdb/types';
 /**
  * Save and load backups from localStorage - may be subject to localstorage size limits
  * @category Storage Provider
  */
-export declare class LocalStorage implements StorageProvider {
+export declare class FSStorage<T> implements StorageProvider<T> {
     readonly saveDirectory: string;
     readonly prefix: string;
     private db;
@@ -13,7 +12,7 @@ export declare class LocalStorage implements StorageProvider {
         prefix?: string;
     });
     private normalizePath;
-    load(doc: DBDoc): any;
-    save(doc: DBDoc, data: Data): boolean;
-    delete(doc: DBDoc): boolean;
+    load(doc: DBDoc<T>): T;
+    save(doc: DBDoc<T>, data: T): boolean;
+    delete(doc: DBDoc<T>): boolean;
 }

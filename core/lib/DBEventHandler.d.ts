@@ -1,4 +1,4 @@
-import type { EventName, MemsDBEvent } from '@memsdb/types/events';
+import type { EventName, MemsDBEvent } from '@memsdb/types';
 /**
  * @category Database Event
  */

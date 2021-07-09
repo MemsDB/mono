@@ -1,5 +1,4 @@
-import type { Query, Operators } from '@memsdb/types/query';
-import type { DBCollection, DBDoc } from '@memsdb/core';
+import type { Query as QueryType, QueryBuilder as QueryBuilderType, Operators, DBDoc as DBDocType, DBCollection as DBCollectionType } from '@memsdb/types';
 import type { Debugger } from 'debug';
 /**
  * Run a query to filter out specific documents
@@ -9,8 +8,8 @@ import type { Debugger } from 'debug';
  * @param seedDocs Document array to filter, either from the collection, or from recursion
  * @category Query
  */
-export declare const runQuery: (queryArr: Query[] | QueryBuilder, col: DBCollection, seedDocs: DBDoc[], nested_?: Debugger | undefined, nestedOp_?: Operators | undefined) => DBDoc[];
-declare type WhereCallback = (query: QueryBuilder) => QueryBuilder;
+export declare const runQuery: (queryArr: QueryType[] | QueryBuilderType, col: DBCollectionType<any>, seedDocs: DBDocType<any>[], nested_?: Debugger | undefined, nestedOp_?: Operators | undefined) => DBDocType<any>[];
+declare type WhereCallback = (query: QueryBuilderType) => QueryBuilderType;
 /**
  * Helper function to easily generate queries
  * @example Simple example showing a basic set of where's (&& together) to get documents with a value between (inclusive) 40 and 50
@@ -86,8 +85,8 @@ declare type WhereCallback = (query: QueryBuilder) => QueryBuilder;
  * ```
  * @category Query
  */
-export declare class QueryBuilder {
-    queries: Query[];
+export declare class QueryBuilder implements QueryBuilderType {
+    queries: QueryType[];
     constructor();
     /**
      * Generate a new query for the array
@@ -104,26 +103,26 @@ export declare class QueryBuilder {
      * @param comparison What to compare against
      * @param inverse Inverse the result of the where query
      */
-    static where(key: string, operation: Operators, comparison: any, inverse?: boolean): QueryBuilder;
+    static where(key: string, operation: Operators, comparison: any, inverse?: boolean): QueryBuilderType;
     /**
      * Generate a nested || query
      * @param queryFunc callback for generating || queries with a nested QueryBuilder
      */
-    orWhere(queryFunc: WhereCallback): this;
+    orWhere(queryFunc: WhereCallback): QueryBuilderType;
     /**
      * Generate a nested || query
      * @param queryFunc callback for generating || queries with a nested QueryBuilder
      */
-    static orWhere(queryFunc: WhereCallback): QueryBuilder;
+    static orWhere(queryFunc: WhereCallback): QueryBuilderType;
     /**
      * Generate && queries for nesting within || queries
      * @param queryFunc callback for generating queries with a nested QueryBuilder
      */
-    andWhere(queryFunc: WhereCallback): this;
+    andWhere(queryFunc: WhereCallback): QueryBuilderType;
     /**
      * Generate && queries for nesting within || queries
      * @param queryFunc callback for generating queries with a nested QueryBuilder
      */
-    static andWhere(queryFunc: WhereCallback): QueryBuilder;
+    static andWhere(queryFunc: WhereCallback): QueryBuilderType;
 }
 export {};

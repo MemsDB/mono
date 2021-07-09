@@ -1,4 +1,4 @@
-import { BackupProvider } from '@memsdb/types/backupProvider'
+import { BackupProvider } from '@memsdb/types'
 
 /**
  * Send backups to the void, and retrieve nothing

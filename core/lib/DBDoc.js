@@ -1,6 +1,10 @@
 import { v4 } from 'uuid';
 import { cloneDeep, merge } from 'smoldash';
-import { nestedKey, updateReactiveIndex, populate, debounce, updateDocIndex } from '@memsdb/utils';
+import { updateDocIndex } from './utils/Indexed';
+import { updateReactiveIndex } from './utils/ReactiveIndex';
+import { nestedKey } from './utils/NestedKey';
+import { debounce } from './utils/Debounce';
+import { populate } from './Populate';
 /**
  * Class for creating structured documents
  * @category Core
@@ -16,9 +20,9 @@ export class DBDoc {
         this._createdAt = Date.now();
         this._updatedAt = Date.now();
         /** Reference to indexed data for repeated deep data matching */
-        this.indexed = {};
+        this.indexed = new Map();
         /** Object for any plugin related data */
-        this._pluginData = {};
+        this._pluginData = new Map();
         this.updateIndexes = debounce((path) => {
             /* DEBUG */ this.collection.col_('Document %s was modified at path %s', this.id, path);
             this._updatedAt = Date.now();
@@ -49,7 +53,7 @@ export class DBDoc {
              * @returns Data from the plugin
              */
             get: (plugin) => {
-                return this._pluginData[plugin];
+                return this._pluginData.get(plugin);
             },
             /**
              * Set/replace the data object for a plugin
@@ -57,14 +61,14 @@ export class DBDoc {
              * @param data Data to replace the plugin data with
              */
             set: (plugin, data) => {
-                this._pluginData[plugin] = data;
+                this._pluginData.set(plugin, data);
             },
             /**
              * Delete the data object of a specific plugin
              * @param plugin Plugin name to delete data of
              */
             delete: (plugin) => {
-                delete this._pluginData[plugin];
+                this._pluginData.delete(plugin);
             },
         };
         this.collection = collection;

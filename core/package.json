@@ -2,8 +2,9 @@
   "name": "@memsdb/core",
   "version": "0.5.0",
   "description": "A simple embedded document based database with advanced querying, advanced population/tree creation, and multiple storage and backup providers.",
-  "main": "lib/index.js",
   "esnext": "lib/index.js",
+  "type": "module",
+  "module": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p tsconfig.json"

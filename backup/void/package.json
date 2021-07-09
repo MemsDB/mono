@@ -2,7 +2,8 @@
   "name": "@memsdb/backup-void",
   "version": "0.3.0",
   "description": "Backup layer for storing MemsDB backup data in the void",
-  "main": "lib/index.js",
+  "esnext": "lib/index.js",
+  "type": "module",
   "module": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

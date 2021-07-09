@@ -1,4 +1,4 @@
-import { DBDoc } from "../doc";
+import type { DBDoc } from './Core'
 
 /**
  * How a backup will be output by the DB and how it should be returned from
@@ -11,8 +11,8 @@ export interface Data {
 /**
  * The required structure for a BackupProvider to function
  */
-export interface StorageProvider {
-  save: (doc: DBDoc, data: Data) => boolean
-  load: (doc: DBDoc) => Data
-  delete: (doc: DBDoc) => void
+export interface StorageProvider<T>{
+  save: (doc: DBDoc<T>, data: T) => boolean
+  load: (doc: DBDoc<T>) => T
+  delete: (doc: DBDoc<T>) => void
 }

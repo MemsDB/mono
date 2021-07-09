@@ -1,13 +1,12 @@
-import type { DBDoc } from '@memsdb/core';
-import type { Data, StorageProvider } from '@memsdb/types/storageProvider';
+import type { StorageProvider, DBDoc } from '@memsdb/types';
 /**
  * Save and load backups from localStorage - may be subject to localstorage
  * size limits
  * @category Storage Provider
  */
-export declare class MemoryStorage implements StorageProvider {
+export declare class MemoryStorage<T> implements StorageProvider<T> {
     constructor();
-    load(doc: DBDoc): any;
-    save(doc: DBDoc, data: Data): boolean;
-    delete(doc: DBDoc): void;
+    load(doc: DBDoc<T>): T;
+    save(doc: DBDoc<T>, data: T): boolean;
+    delete(doc: DBDoc<T>): void;
 }

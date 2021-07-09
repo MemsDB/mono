@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@memsdb/types@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.0.1.tgz#66ee08d1eda6c3bf0bc350190668eb8ed85961a8"
-  integrity sha512-j7aX0q0wyrbZ1kPoKJgDVGjfMBCTVzxxQ8iLcGyVsrSi/I19z80FePfSWFI5lUK8L9Dp/NgXx3x4Y0UT4XxmoQ==
+"@memsdb/types@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.3.0.tgz#cd34e946eda40b98836fe37af68c2727d8ed198d"
+  integrity sha512-TAJ8B0ZV5ZFQ/ueL6ZE7kMwHwWfjnIK1nPGWcaG7pUeRuF1ydss2ZSV8j0pIMP3TjRv0LdKsdJdeU6yeRyoYWw==
 
 "@types/node@^16.0.0":
   version "16.0.0"

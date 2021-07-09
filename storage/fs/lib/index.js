@@ -1,10 +1,10 @@
-import { readFileSync, existsSync, writeFileSync, mkdirSync, rmSync, } from 'fs';
+import { readFileSync, existsSync, writeFileSync, mkdirSync, rmSync } from 'fs';
 import { isAbsolute, join, normalize } from 'path';
 /**
  * Save and load backups from localStorage - may be subject to localstorage size limits
  * @category Storage Provider
  */
-export class LocalStorage {
+export class FSStorage {
     constructor(db, opts = {}) {
         this.db = db;
         const { saveDirectory = './data', prefix = `${this.db.name}_` } = opts;
@@ -52,7 +52,7 @@ export class LocalStorage {
         const filePath = this.normalizePath(doc.id);
         try {
             writeFileSync(filePath, JSON.stringify(data), {
-                encoding: 'utf8'
+                encoding: 'utf8',
             });
         }
         catch (err) {

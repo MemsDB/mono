@@ -4,7 +4,8 @@
  * [[include:populate.md]]
  */
 import { v4 } from 'uuid';
-import { nestedKey } from './key';
+import { nestedKey } from './utils/NestedKey';
+import { QueryBuilder } from './Query';
 /**
  * Tokenify a string array into a usable token array for MemsPL
  * @ignore
@@ -32,6 +33,8 @@ const tokenify = (strArr = [], tokenArr = []) => {
             case '>':
             case '{':
             case '}':
+            case '(':
+            case ')':
                 if (token !== '')
                     pushAndReset();
                 tokenArr.push(char);
@@ -84,6 +87,15 @@ const createQueries = (tokenArr = [], cur = {}, queries = [], db, __) => {
                 /* DEBUG */ __('--%s--, Closing ref', token);
                 nextTokenType = 'key';
                 continue;
+            // Start population of array from a remote key
+            case '(':
+                /* DEBUG */ __('--%s--, Opening remote key', token);
+                nextTokenType = 'remote';
+                continue;
+            // End population of remote key
+            case ')':
+                /* DEBUG */ __('--%s--, Closing remote key');
+                continue;
             // Start child queries
             case '[':
             case '{':
@@ -108,8 +120,15 @@ const createQueries = (tokenArr = [], cur = {}, queries = [], db, __) => {
                     __('--- %s', cur.key.substr(cur.key.length - 1) === '.' ? 'true' : 'false');
                 }
                 // Set the ref or key to the current token
-                cur[nextTokenType] =
-                    nextTokenType === 'ref' ? db.collections[token] : token;
+                switch (nextTokenType) {
+                    case 'key':
+                    case 'remote':
+                        cur[nextTokenType] = token;
+                        break;
+                    case 'ref':
+                        cur[nextTokenType] = db.collections.get(token);
+                        break;
+                }
                 // Continue the while loop when if there are:
                 // - More tokens
                 // - The next token is an array/object opener
@@ -189,8 +208,8 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
     const parsed = ParseMemsPL(populateQuery, rootCollection, _);
     _('population formatted, running recursive populate');
     const filterDoc = (doc, keys) => {
-        const toRemove = Object.keys(doc.data).filter((key) => !keys.includes(key));
-        toRemove.forEach((key) => delete doc.data[key]);
+        const toRemove = Object.keys(doc.data).filter(key => !keys.includes(key));
+        toRemove.forEach(key => delete doc.data[key]);
     };
     /**
      * A recursive function to populate documents down a tree
@@ -200,9 +219,9 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
     const runPopulate = (queries, docsOrig, pop_) => {
         const runPop_ = pop_.extend(`<runPopulate>${v4()}`);
         // Duplicate all the original documents so as to avoid mutating the originals with references to the copies
-        const duped = docsOrig.map((doc) => doc.clone());
+        const duped = docsOrig.map(doc => doc.clone());
         /* DEBUG */ runPop_('Documents duped');
-        const keysList = queries.map((query) => query.key);
+        const keysList = queries.map(query => query.key);
         runPop_('List of keys to keep on document: %O', keysList);
         // Go down the array of queries to populate documents
         for (let i = 0; i < queries.length; i++) {
@@ -210,7 +229,7 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
             /* DEBUG */ runPop_('Query picked, %d remaining', queries.length - i - 1);
             // Map over duped documents applying the populations to the correct key
             /* DEBUG */ runPop_('Looping over duplicated docs to run population queries on');
-            duped.forEach((doc) => {
+            duped.forEach(doc => {
                 let nestedKeyVal;
                 if (query) {
                     switch (query.key) {
@@ -248,7 +267,7 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
                         }
                         // Otherwise set the key to the first result of a populate query
                         else {
-                            /* DEBUG */ runPop_('Query isn\'t on an array');
+                            /* DEBUG */ runPop_("Query isn't on an array");
                             // Find the document
                             const childDoc = query.ref.id(nestedKeyVal);
                             // If the child document exists, run a population on it
@@ -286,6 +305,9 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
                 else {
                     /* DEBUG */ runPop_('No ref');
                 }
+                if (query?.remote && query?.ref) {
+                    doc.set(query.key, query.ref.find(QueryBuilder.where(query.remote, '===', doc.id)));
+                }
                 if (filter) {
                     /* DEBUG */ runPop_('Removing unnecessary keys from document');
                     filterDoc(doc, keysList);
@@ -299,4 +321,4 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
     const populated = runPopulate(parsed, docs, _);
     return populated;
 };
-//# sourceMappingURL=populate.js.map
+//# sourceMappingURL=Populate.js.map

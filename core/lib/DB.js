@@ -16,36 +16,37 @@ export class DB {
     constructor(name = v4(), opts = {}) {
         /** Key based object containing all the collections */
         this.name = 'memsdb';
-        this.collections = {};
+        this.collections = new Map();
         /**
          * @ignore
          * List of event handlers
          */
-        this.eventHandlers = {};
+        this.eventHandlers = new Map();
         this.name = name;
         this.db_ = memsdb_.extend(`<db>${name}`);
-        const { useDynamicIndexes = false, backupProvider = new VoidBackup(), eventHandlers, storageEngine = new MemoryStorage() } = opts;
+        const { useDynamicIndexes = false, backupProvider = new VoidBackup(), eventHandlers, storageEngine = new MemoryStorage(), } = opts;
         this.options = {
             useDynamicIndexes,
-            backupProvider
+            backupProvider,
         };
         this.storageEngine = storageEngine;
         if (eventHandlers) {
             const eventTypes = Object.keys(eventHandlers);
             const addEventHandler = (type, handler) => {
-                if (this.eventHandlers[type]) {
-                    this.eventHandlers[type].push(handler);
+                const evHandler = this.eventHandlers.get(type);
+                if (evHandler) {
+                    evHandler.push(handler);
                 }
                 else
-                    this.eventHandlers[type] = [handler];
+                    this.eventHandlers.set(type, [handler]);
             };
-            eventTypes.forEach((handlerType) => {
+            eventTypes.forEach(handlerType => {
                 if (eventHandlers) {
                     const handlers = eventHandlers[handlerType];
                     if (!handlers)
                         return;
                     if (Array.isArray(handlers))
-                        handlers.forEach((handler) => addEventHandler(handlerType, handler));
+                        handlers.forEach(handler => addEventHandler(handlerType, handler));
                     else
                         addEventHandler(handlerType, handlers);
                 }
@@ -58,11 +59,14 @@ export class DB {
      */
     addEventHandler(eventHandler) {
         const addHandler = (handler) => {
-            if (!this.eventHandlers[handler.eventType]) {
-                this.eventHandlers[handler.eventType].push(handler.func);
+            const handlerType = handler.eventType;
+            const keys = Object.keys(this.eventHandlers);
+            const evHandlers = this.eventHandlers.get(handlerType);
+            if (evHandlers) {
+                evHandlers.push(handler.func);
             }
             else
-                this.eventHandlers[handler.eventType] = [handler.func];
+                this.eventHandlers.set(handlerType, [handler.func]);
         };
         if (Array.isArray(eventHandler)) {
             eventHandler.forEach(addHandler);
@@ -72,7 +76,7 @@ export class DB {
             this.emitEvent({
                 event: 'EventDBHandlerAdded',
                 db: this,
-                handler: eventHandler
+                handler: eventHandler,
             });
         }
     }
@@ -81,8 +85,9 @@ export class DB {
      * @param event Event to emit
      */
     emitEvent(event) {
-        if (this.eventHandlers[event.event]) {
-            this.eventHandlers[event.event].forEach((handler) => handler(event));
+        const evHandlers = this.eventHandlers.get(event.event);
+        if (evHandlers) {
+            evHandlers.forEach(handler => handler(event));
         }
     }
     /**
@@ -91,7 +96,7 @@ export class DB {
      */
     c(name) {
         /* DEBUG */ this.db_('Finding and returning collection with name/key of `%s`', name);
-        return this.collections[name];
+        return this.collections.get(name);
     }
     /**
      * Alias of this.c() - Returns a specified collection
@@ -113,8 +118,9 @@ export class DB {
             collection,
             opts,
         });
-        if (!this.collections[collection.name] || opts.replace)
-            this.collections[collection.name] = collection;
+        const hasCollection = this.collections.has(collection.name);
+        if (!hasCollection || opts.replace)
+            this.collections.set(collection.name, collection);
         return collection;
     }
     /**
@@ -122,17 +128,18 @@ export class DB {
      * @param name Collection name to delete
      */
     deleteCollection(name) {
-        let success = true;
-        let error;
         try {
             /* DEBUG */ this.db_('Removing collection `%s` from DB', name);
+            const collection = this.collections.get(name);
+            if (!collection)
+                return this;
             /* DEBUG */ this.db_('Emitting event "EventDBAddCollection"');
             this.emitEvent({
                 event: 'EventDBDeleteCollection',
-                collection: this.collections[name],
+                collection: collection,
             });
-            this.collections[name].docs.forEach((doc) => doc.delete());
-            delete this.collections[name];
+            collection.docs.forEach(doc => doc.delete());
+            this.collections.delete(name);
             /* DEBUG */ this.db_('Emitting event "EventDBDeleteCollectionComplete"');
             this.emitEvent({
                 event: 'EventDBDeleteCollectionComplete',
@@ -160,20 +167,23 @@ export class DB {
      * @param name Empty out a specified collection
      */
     emptyCollection(name) {
+        const collection = this.collection(name);
+        if (!collection)
+            return this;
         try {
-            /* DEBUG */ this.db_('Emptying collection `%s`. Current document count: %d', name, this.collections[name].docs.length);
+            /* DEBUG */ this.db_('Emptying collection `%s`. Current document count: %d', name, collection.docs.length);
             /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection"');
             this.emitEvent({
                 event: 'EventDBEmptyCollection',
-                collection: this.collections[name],
+                collection: collection,
             });
-            this.collections[name].docs.forEach((doc) => doc.delete());
-            this.collections[name].docs.length = 0;
-            /* DEBUG */ this.db_('Emptying collection `%s` completed. Current document count: %d', name, this.collections[name].docs.length);
+            collection.docs.forEach(doc => doc.delete());
+            collection.docs.length = 0;
+            /* DEBUG */ this.db_('Emptying collection `%s` completed. Current document count: %d', name, collection.docs.length);
             /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection"');
             this.emitEvent({
                 event: 'EventDBEmptyCollectionComplete',
-                collection: this.collections[name],
+                collection: collection,
                 success: true,
             });
         }
@@ -182,7 +192,7 @@ export class DB {
             /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection" with error');
             this.emitEvent({
                 event: 'EventDBEmptyCollectionComplete',
-                collection: this.collections[name],
+                collection,
                 success: false,
                 error: err,
             });
@@ -197,17 +207,15 @@ export class DB {
     backup() {
         /* DEBUG */ this.db_('Starting backup');
         const backup = {};
-        const collections = Object.keys(this.collections);
         /* DEBUG */ this.db_('Serialising collections');
-        collections.forEach((col) => {
-            const collection = this.collections[col];
+        this.collections.forEach((collection, key) => {
             const keys = Object.keys(collection.schema);
-            const values = collection.docs.map((doc) => [
+            const values = collection.docs.map(doc => [
                 doc.id,
-                ...keys.map((key) => doc.data[key]),
+                ...keys.map(key => doc.data[key]),
             ]);
             keys.unshift('id');
-            backup[col] = {
+            backup[key] = {
                 keys,
                 values,
             };
@@ -244,12 +252,12 @@ export class DB {
         /* DEBUG */ this.db_('Collection data loaded from BackupProvider');
         const collectionKeys = Object.keys(backup);
         /* DEBUG */ this.db_('%d collections to restore', collectionKeys.length);
-        collectionKeys.forEach((colKey) => {
-            const col = this.collections[colKey];
+        collectionKeys.forEach(colKey => {
+            const col = this.collection(colKey);
             if (!col)
                 return;
             const data = backup[colKey];
-            data.values.forEach((docData) => {
+            data.values.forEach(docData => {
                 const doc = {};
                 data.keys.forEach((key, i) => {
                     // Skip the ID

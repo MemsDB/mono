@@ -1,13 +1,12 @@
-import { readFileSync, existsSync, writeFileSync, mkdirSync, rmSync,  } from 'fs'
+import { readFileSync, existsSync, writeFileSync, mkdirSync, rmSync } from 'fs'
 import { isAbsolute, join, normalize } from 'path'
-import { DB, DBDoc } from '@memsdb/core'
-import { Data, StorageProvider } from '@memsdb/types/storageProvider'
+import { Data, StorageProvider, DB, DBDoc } from '@memsdb/types'
 
 /**
  * Save and load backups from localStorage - may be subject to localstorage size limits
  * @category Storage Provider
  */
-export class LocalStorage implements StorageProvider {
+export class FSStorage<T> implements StorageProvider<T> {
   readonly saveDirectory: string
   readonly prefix: string
 
@@ -26,7 +25,6 @@ export class LocalStorage implements StorageProvider {
     this.saveDirectory = normalize(saveDirectory)
     this.prefix = prefix
 
-
     if (!existsSync(this.saveDirectory)) {
       mkdirSync(this.saveDirectory, {
         recursive: true,
@@ -44,7 +42,7 @@ export class LocalStorage implements StorageProvider {
     return normalize(join(...paths))
   }
 
-  load(doc: DBDoc) {
+  load(doc: DBDoc<T>): T {
     const filePath = this.normalizePath(doc.id)
 
     if (existsSync(filePath)) {
@@ -67,15 +65,15 @@ export class LocalStorage implements StorageProvider {
       } finally {
         return docData
       }
-    } else return {}
+    } else return {} as T
   }
 
-  save(doc: DBDoc, data: Data) {
+  save(doc: DBDoc<T>, data: T) {
     const filePath = this.normalizePath(doc.id)
-    
+
     try {
       writeFileSync(filePath, JSON.stringify(data), {
-        encoding: 'utf8'
+        encoding: 'utf8',
       })
     } catch (err) {
       console.error(err)
@@ -84,8 +82,8 @@ export class LocalStorage implements StorageProvider {
 
     return true
   }
-  
-  delete(doc: DBDoc) {
+
+  delete(doc: DBDoc<T>) {
     const filePath = this.normalizePath(doc.id)
 
     try {

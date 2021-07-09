@@ -1,49 +1,60 @@
-import { DBDoc } from './DBDoc'
-import { runQuery, updateReactiveIndex, createReactiveIndex } from '@memsdb/utils'
-import type { QueryBuilder } from '@memsdb/utils'
+import { runQuery } from './Query'
+import { updateReactiveIndex, createReactiveIndex } from './utils/ReactiveIndex'
 
+import { DBDoc } from './DBDoc'
 import type {
-  CollectionFindOpts,
-  CollectionInsertManyOpts,
-  CollectionInsertOpts,
-} from '@memsdb/types/Collection'
-import type { DB } from './DB'
-import type { Query } from '@memsdb/types/query'
-import type { SchemaTemplateType } from '@memsdb/types'
-import type { MemsDBEvent } from '@memsdb/types/events'
+  DB as DBType,
+  DBCollection as DBCollectionType,
+  DBCollectionFindOpts,
+  DBCollectionInsertOpts,
+  DBDoc as DBDocType,
+  DBCollectionInsertManyOpts,
+  MemsDBEvent,
+  Query,
+  QueryBuilder,
+} from '@memsdb/types'
 
 /**
  * Class for creating collections of structured documents
  * @category Core
  */
-export class DBCollection {
+export class DBCollection<T extends { [key: string]: any }>
+  implements DBCollectionType<T>
+{
   /** Name of the collection */
   readonly name: string
   /** Schema every document should adhere to */
-  readonly schema: { [key: string]: any }
+  readonly schema: T
   /** Document array */
-  docs: DBDoc[]
+  docs: DBDocType<T>[]
   /** Debugger variable */
   readonly col_: debug.Debugger
   /** Reference to the DB object */
-  readonly db: DB
+  readonly db: DBType
   /** Map for reactive query results */
-  reactiveIndexed: Map<Query[] | QueryBuilder, { docs: DBDoc[] }> = new Map()
+  reactiveIndexed: Map<Query[] | QueryBuilder, { docs: DBDocType<T>[] }> =
+    new Map()
 
   /**
    * Create a structured collection of documents
    * @param db Database reference
    * @param schema Schema for content to adhere to
    */
-  constructor(db: DB, schema: SchemaTemplateType) {
+  constructor(
+    db: DBType,
+    schema: {
+      name: string
+      structure: T
+    }
+  ) {
     this.schema = schema.structure
     this.docs = []
     this.name = schema.name
 
     this.col_ = db.db_.extend(`<col>${schema.name}`)
-    db.addCollection(this, { replace: true })
 
     this.db = db
+    this.db.addCollection(this as DBCollectionType<T>, { replace: true })
   }
 
   /**
@@ -52,13 +63,13 @@ export class DBCollection {
    */
   id(idStr: string) {
     /* DEBUG */ this.col_('Finding document by id `%s`', idStr)
-    const doc = this.docs.find((doc) => doc.id === idStr)
+    const doc = this.docs.find(doc => doc.id === idStr)
     /* DEBUG */ this.col_(
       'Document found for id:`%s` %s',
       idStr,
       doc ? 'true' : 'false'
     )
-    return doc
+    return doc as DBDocType<T>
   }
 
   /**
@@ -68,9 +79,10 @@ export class DBCollection {
    *    collection under collection.reactive[queryArr]
    * @category Query
    */
-  find(opts: CollectionFindOpts = { queries: [], reactive: false }) {
+  find(opts: DBCollectionFindOpts = {}): DBDocType<T>[] {
+    const { queries = [], reactive = false } = opts
     /* DEBUG */ this.col_('Starting find query')
-    let docs: DBDoc[] = []
+    let docs: DBDocType<T>[] = []
 
     /* DEBUG */ this.col_('Emitting event "EventCollectionFind"')
     this.emitEvent({
@@ -78,14 +90,14 @@ export class DBCollection {
       opts,
     })
 
-    if (!opts.queries) {
+    if (!queries) {
       /* DEBUG */ this.col_('No query specified, using empty array')
       docs = runQuery([], this, this.docs)
-    } else if (opts.reactive) {
-      createReactiveIndex(this, opts.queries)
-      docs = runQuery(opts.queries, this, this.docs)
+    } else if (reactive) {
+      createReactiveIndex(this, queries as Query[])
+      docs = runQuery(queries as Query[], this, this.docs)
     } else {
-      docs = runQuery(opts.queries, this, this.docs)
+      docs = runQuery(queries as Query[], this, this.docs)
     }
 
     /* DEBUG */ this.col_('Emitting event "EventCollectionFindComplete"')
@@ -103,7 +115,7 @@ export class DBCollection {
    * Insert a new document into the array. Defaults will be loaded from the schema
    * @param opts Insert document options
    */
-  insertOne(opts: CollectionInsertOpts) {
+  insertOne(opts: DBCollectionInsertOpts<T>): DBDocType<T> {
     opts = {
       reactiveUpdate: true,
       ...opts,
@@ -136,24 +148,24 @@ export class DBCollection {
       )
     }
 
-    const newDoc = new DBDoc(opts.doc, this, opts.id)
+    const newDoc = new DBDoc<T>(opts.doc, this, opts.id)
     /* DEBUG */ this.col_(
       'Created document with id: %s, pushing to collection',
       newDoc.id
     )
 
-    this.docs.push(newDoc)
+    this.docs.push(newDoc as DBDocType<T>)
 
     for (const key of this.reactiveIndexed.keys()) {
       /* DEBUG */ this.col_('Updating index')
-      if (opts.reactiveUpdate) updateReactiveIndex(this, key)
+      if (opts.reactiveUpdate)
+        updateReactiveIndex(this as DBCollectionType<T>, key)
     }
 
     /* DEBUG */ this.col_('Emitting event "EventCollectionInsertComplete"')
     this.emitEvent({
       event: 'EventCollectionInsertComplete',
       doc: newDoc,
-      unlistenedDoc: newDoc,
       collection: this,
     })
 
@@ -165,15 +177,15 @@ export class DBCollection {
    * Alias of insertOne
    * @param opts Insert document options
    */
-  insert(opts: CollectionInsertOpts) {
-    return this.insertOne(opts)
+  insert(opts: DBCollectionInsertOpts<T>) {
+    return this.insertOne(opts) as DBDocType<T>
   }
 
   /**
    * Add any amount of new documents to the collection
    * @param docs New documents to be added
    */
-  insertMany(opts: CollectionInsertManyOpts) {
+  insertMany(opts: DBCollectionInsertManyOpts<T>) {
     /* DEBUG */ this.col_('Creating %d new documents', opts.doc.length)
     opts.doc.map((doc, i, arr) =>
       this.insertOne({

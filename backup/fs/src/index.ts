@@ -1,7 +1,13 @@
-import { existsSync, mkdirSync } from 'fs'
-import { readFileSync, writeFileSync, readdirSync, rmSync } from 'fs'
+import {
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  rmSync,
+  existsSync,
+  mkdirSync,
+} from 'fs'
 import { join } from 'path'
-import { Backup, BackupProvider } from '@memsdb/types/backupProvider'
+import { Backup, BackupProvider } from '@memsdb/types'
 
 interface FSBackupOpts {
   /**
@@ -53,7 +59,7 @@ export class FSBackup implements BackupProvider {
    */
   load() {
     const dirListing = readdirSync(this.saveDirectory)
-    const currentFiles = dirListing.filter((file) => file.endsWith('.memsdb'))
+    const currentFiles = dirListing.filter(file => file.endsWith('.memsdb'))
 
     const sorted = currentFiles.sort().reverse()
 
@@ -113,11 +119,11 @@ export class FSBackup implements BackupProvider {
     try {
       const dirListing = readdirSync(this.saveDirectory)
       const currentFiles = dirListing
-        .filter((file) => file.endsWith('.memsdb'))
+        .filter(file => file.endsWith('.memsdb'))
         .sort()
         .reverse()
       const toDelete = currentFiles.splice(this.backupLimit)
-      toDelete.map((file) => rmSync(join(this.saveDirectory, file)))
+      toDelete.map(file => rmSync(join(this.saveDirectory, file)))
     } catch (err) {
       console.error(err)
     }
