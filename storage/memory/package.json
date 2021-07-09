@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/storage-memory",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Storage layer for storing MemsDB document data fields in memory",
   "esnext": "lib/index.js",
   "type": "module",
