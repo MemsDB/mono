@@ -83,6 +83,12 @@
 					</li>
 				</ul>
 			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><span class="tsd-signature-type">DBType</span></li>
+				</ul>
+			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -100,6 +106,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_memsdb_core.db.html#db_" class="tsd-kind-icon">db_</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_memsdb_core.db.html#name" class="tsd-kind-icon">name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_memsdb_core.db.html#options" class="tsd-kind-icon">options</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_memsdb_core.db.html#queryhandlers" class="tsd-kind-icon">query<wbr>Handlers</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="_memsdb_core.db.html#storageengine" class="tsd-kind-icon">storage<wbr>Engine</a></li>
 							</ul>
 						</section>
@@ -108,6 +115,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#addcollection" class="tsd-kind-icon">add<wbr>Collection</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#addeventhandler" class="tsd-kind-icon">add<wbr>Event<wbr>Handler</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#addqueryhandler" class="tsd-kind-icon">add<wbr>Query<wbr>Handler</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#backup" class="tsd-kind-icon">backup</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#c" class="tsd-kind-icon">c</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="_memsdb_core.db.html#collection" class="tsd-kind-icon">collection</a></li>
@@ -126,13 +134,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new DB<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>backupProvider<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">BackupProvider</span><span class="tsd-signature-symbol">; </span>eventHandlers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EventHandlersType</span><span class="tsd-signature-symbol">; </span>storageEngine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">; </span>useDynamicIndexes<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_memsdb_core.db.html" class="tsd-signature-type" data-tsd-kind="Class">DB</a></li>
+						<li class="tsd-signature tsd-kind-icon">new DB<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>backupProvider<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">BackupProvider</span><span class="tsd-signature-symbol">; </span>eventHandlers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EventHandlersType</span><span class="tsd-signature-symbol">; </span>storageEngine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>useDynamicIndexes<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_memsdb_core.db.html" class="tsd-signature-type" data-tsd-kind="Class">DB</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L41">core/src/DB.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L41">core/src/DB.ts:41</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -149,7 +157,7 @@
 									</div>
 								</li>
 								<li>
-									<h5>opts: <span class="tsd-signature-symbol">{ </span>backupProvider<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">BackupProvider</span><span class="tsd-signature-symbol">; </span>eventHandlers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EventHandlersType</span><span class="tsd-signature-symbol">; </span>storageEngine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">; </span>useDynamicIndexes<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = {}</span></h5>
+									<h5>opts: <span class="tsd-signature-symbol">{ </span>backupProvider<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">BackupProvider</span><span class="tsd-signature-symbol">; </span>eventHandlers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">EventHandlersType</span><span class="tsd-signature-symbol">; </span>storageEngine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">; </span>useDynamicIndexes<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = {}</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Options object to modify DB behaviour (mostly unused)</p>
 									</div>
@@ -171,7 +179,7 @@
 											</div>
 										</li>
 										<li class="tsd-parameter">
-											<h5><span class="tsd-flag ts-flagOptional">Optional</span> storage<wbr>Engine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span></h5>
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> storage<wbr>Engine<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 											<div class="tsd-comment tsd-typography">
 												<div class="lead">
 													<p>Storage provider for document data</p>
@@ -200,28 +208,22 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="collections" class="tsd-anchor"></a>
 					<h3>collections</h3>
-					<div class="tsd-signature tsd-kind-icon">collections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{}</span><span class="tsd-signature-symbol"> = {}</span></div>
+					<div class="tsd-signature tsd-kind-icon">collections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of DBType.collections</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L27">core/src/DB.ts:27</a></li>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L28">core/src/DB.ts:28</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-type-declaration">
-						<h4>Type declaration</h4>
-						<ul class="tsd-parameters">
-							<li class="tsd-parameter-index-signature">
-								<h5><span class="tsd-signature-symbol">[</span>key: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></h5>
-							</li>
-						</ul>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="db_" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> db_</h3>
 					<div class="tsd-signature tsd-kind-icon">db_<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Debugger</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of DBType.db_</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L29">core/src/DB.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L30">core/src/DB.ts:30</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -235,8 +237,9 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> name</h3>
 					<div class="tsd-signature tsd-kind-icon">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &#x27;memsdb&#x27;</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of DBType.name</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L26">core/src/DB.ts:26</a></li>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L27">core/src/DB.ts:27</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -250,8 +253,9 @@
 					<h3>options</h3>
 					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>backupProvider<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">BackupProvider</span><span class="tsd-signature-symbol">; </span>useDynamicIndexes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of DBType.options</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L30">core/src/DB.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L31">core/src/DB.ts:31</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -267,12 +271,24 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
-					<a name="storageengine" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> storage<wbr>Engine</h3>
-					<div class="tsd-signature tsd-kind-icon">storage<wbr>Engine<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">StorageProvider</span></div>
+					<a name="queryhandlers" class="tsd-anchor"></a>
+					<h3>query<wbr>Handlers</h3>
+					<div class="tsd-signature tsd-kind-icon">query<wbr>Handlers<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">QueryHandlerFunction</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = ...</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of DBType.queryHandlers</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L41">core/src/DB.ts:41</a></li>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L41">core/src/DB.ts:41</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="storageengine" class="tsd-anchor"></a>
+					<h3>storage<wbr>Engine</h3>
+					<div class="tsd-signature tsd-kind-icon">storage<wbr>Engine<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">StorageProvider</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Implementation of DBType.storageEngine</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L39">core/src/DB.ts:39</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -283,13 +299,14 @@
 					<a name="addcollection" class="tsd-anchor"></a>
 					<h3>add<wbr>Collection</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Collection<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">AddCollectionOpts</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Collection<span class="tsd-signature-symbol">(</span>collection<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, opts<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>replace<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.addCollection</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L171">core/src/DB.ts:171</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L186">core/src/DB.ts:186</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -300,16 +317,21 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>collection: <a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></h5>
+									<h5>collection: <span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>Collection to add to the db</p>
 									</div>
 								</li>
 								<li>
-									<h5>opts: <span class="tsd-signature-type">AddCollectionOpts</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<h5>opts: <span class="tsd-signature-symbol">{ </span>replace<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5>replace<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></h5>
+										</li>
+									</ul>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -317,13 +339,14 @@
 					<a name="addeventhandler" class="tsd-anchor"></a>
 					<h3>add<wbr>Event<wbr>Handler</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">add<wbr>Event<wbr>Handler<span class="tsd-signature-symbol">(</span>eventHandler<span class="tsd-signature-symbol">: </span><a href="_memsdb_core.eventhandler.html" class="tsd-signature-type" data-tsd-kind="Class">EventHandler</a><span class="tsd-signature-symbol"> | </span><a href="_memsdb_core.eventhandler.html" class="tsd-signature-type" data-tsd-kind="Class">EventHandler</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Event<wbr>Handler<span class="tsd-signature-symbol">(</span>eventHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">EventHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">EventHandler</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.addEventHandler</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L116">core/src/DB.ts:116</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L126">core/src/DB.ts:126</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -334,9 +357,41 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>eventHandler: <a href="_memsdb_core.eventhandler.html" class="tsd-signature-type" data-tsd-kind="Class">EventHandler</a><span class="tsd-signature-symbol"> | </span><a href="_memsdb_core.eventhandler.html" class="tsd-signature-type" data-tsd-kind="Class">EventHandler</a><span class="tsd-signature-symbol">[]</span></h5>
+									<h5>eventHandler: <span class="tsd-signature-type">EventHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">EventHandler</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
 										<p>EventHandler or array of EventHandler classes to add to the DB</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addqueryhandler" class="tsd-anchor"></a>
+					<h3>add<wbr>Query<wbr>Handler</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Query<wbr>Handler<span class="tsd-signature-symbol">(</span>queryHandler<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueryHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">QueryHandler</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of DBType.addQueryHandler</p>
+								<ul>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L117">core/src/DB.ts:117</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Add custom query handlers to allow for custom filtering</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>queryHandler: <span class="tsd-signature-type">QueryHandler</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">QueryHandler</span><span class="tsd-signature-symbol">[]</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>QueryHandler or QueryHandler array to add to the map.</p>
 									</div>
 								</li>
 							</ul>
@@ -353,8 +408,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.backup</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L294">core/src/DB.ts:294</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L318">core/src/DB.ts:318</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -370,13 +426,14 @@
 					<a name="c" class="tsd-anchor"></a>
 					<h3>c</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">c<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></li>
+						<li class="tsd-signature tsd-kind-icon">c<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.c</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L150">core/src/DB.ts:150</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L165">core/src/DB.ts:165</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -393,7 +450,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -401,13 +458,14 @@
 					<a name="collection" class="tsd-anchor"></a>
 					<h3>collection</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">collection<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></li>
+						<li class="tsd-signature tsd-kind-icon">collection<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.collection</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L162">core/src/DB.ts:162</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L177">core/src/DB.ts:177</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -424,7 +482,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="_memsdb_core.dbcollection.html" class="tsd-signature-type" data-tsd-kind="Class">DBCollection</a></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">DBCollection</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -437,8 +495,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.deleteCollection</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L198">core/src/DB.ts:198</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L215">core/src/DB.ts:215</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -468,8 +527,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.emitEvent</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L140">core/src/DB.ts:140</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L154">core/src/DB.ts:154</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -499,8 +559,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.emptyCollection</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L245">core/src/DB.ts:245</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L264">core/src/DB.ts:264</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -531,8 +592,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of DBType.restore</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/b4d8029/core/src/DB.ts#L349">core/src/DB.ts:349</a></li>
+									<li>Defined in <a href="https://github.com/MemsDB/mono/blob/561b257/core/src/DB.ts#L370">core/src/DB.ts:370</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -580,9 +642,6 @@
 					<li class=" tsd-kind-module">
 						<a href="../modules/_memsdb_storage_sessionstorage.html">@memsdb/storage-<wbr>sessionstorage</a>
 					</li>
-					<li class=" tsd-kind-module">
-						<a href="../modules/_memsdb_utils.html">@memsdb/utils</a>
-					</li>
 				</ul>
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
@@ -608,6 +667,9 @@
 								<a href="_memsdb_core.db.html#options" class="tsd-kind-icon">options</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="_memsdb_core.db.html#queryhandlers" class="tsd-kind-icon">query<wbr>Handlers</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="_memsdb_core.db.html#storageengine" class="tsd-kind-icon">storage<wbr>Engine</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
@@ -615,6 +677,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_memsdb_core.db.html#addeventhandler" class="tsd-kind-icon">add<wbr>Event<wbr>Handler</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="_memsdb_core.db.html#addqueryhandler" class="tsd-kind-icon">add<wbr>Query<wbr>Handler</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="_memsdb_core.db.html#backup" class="tsd-kind-icon">backup</a>
@@ -641,14 +706,29 @@
 					</li>
 				</ul>
 				<ul class="after-current">
-					<li class=" tsd-kind-class tsd-parent-kind-module">
+					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_memsdb_core.dbcollection.html" class="tsd-kind-icon">DBCollection</a>
 					</li>
-					<li class=" tsd-kind-class tsd-parent-kind-module">
+					<li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
 						<a href="_memsdb_core.dbdoc.html" class="tsd-kind-icon">DBDoc</a>
 					</li>
 					<li class=" tsd-kind-class tsd-parent-kind-module">
 						<a href="_memsdb_core.eventhandler.html" class="tsd-kind-icon">Event<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="_memsdb_core.querybuilder.html" class="tsd-kind-icon">Query<wbr>Builder</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="_memsdb_core.queryhandler.html" class="tsd-kind-icon">Query<wbr>Handler</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/_memsdb_core.populatequery.html" class="tsd-kind-icon">Populate<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module">
+						<a href="../modules/_memsdb_core.html#nestedkey" class="tsd-kind-icon">nested<wbr>Key</a>
+					</li>
+					<li class=" tsd-kind-function tsd-parent-kind-module tsd-has-type-parameter">
+						<a href="../modules/_memsdb_core.html#populate" class="tsd-kind-icon">populate</a>
 					</li>
 				</ul>
 			</nav>
@@ -661,12 +741,14 @@
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
 				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
 				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
 				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>

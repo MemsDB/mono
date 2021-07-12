@@ -8,12 +8,13 @@ import { nestedKey } from './NestedKey'
  * @ignore
  */
 export const updateDocIndex = <T>(doc: DBDocType<T>, key = '') => {
+  const data = doc.data
   if (doc.collection.db.options.useDynamicIndexes) {
-    const nestedKeyValue = nestedKey(doc.data, key)
+    const nestedKeyValue = nestedKey(data, key)
     doc.indexed.set(key, nestedKeyValue)
 
     return nestedKeyValue
-  } else return nestedKey(doc.data, key)
+  } else return nestedKey(data, key)
 }
 
 /**
@@ -45,6 +46,7 @@ export const getOrCreateIndex = <T>({
     }
   }
 
+  const data = doc.data
 
   // Ensure a reactive index is actually needed
   if (doc.collection.db.options.useDynamicIndexes || reactiveQuery) {
@@ -59,8 +61,8 @@ export const getOrCreateIndex = <T>({
       else return updateDocIndex(doc, key)
     }
     // If not, just return the normal key
-    else return normalize(nestedKey(doc.data, key))
+    else return normalize(nestedKey(data, key))
   }
   // Otherwise just return the nested key
-  else return normalize(nestedKey(doc.data, key))
+  else return normalize(nestedKey(data, key))
 }

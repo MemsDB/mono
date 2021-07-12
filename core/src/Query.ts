@@ -9,6 +9,7 @@ import type {
   DBCollection as DBCollectionType,
 } from '@memsdb/types'
 import type { Debugger } from 'debug'
+import type { QueryHandler as QueryHandlerType, QueryHandlerFunction } from '@memsdb/types/QueryHandler'
 
 /**
  * Compare a query to the provided document, ran by runQuery()
@@ -17,10 +18,12 @@ import type { Debugger } from 'debug'
  * @param query Query to run
  * @category Query
  */
-const compare = (doc: DBDocType<any>, query: QueryType): boolean => {
+const compare = (doc: DBDocType<any>, query: QueryType, queryPlugins: Map<string, QueryHandlerFunction>): boolean => {
   const val = getOrCreateIndex({ doc, query })
   const { operation: op, comparison: comp, inverse } = query
   let res = false
+
+  queryPlugins.size
 
   if (
     (op === 'hasAllOf' ||
@@ -115,6 +118,10 @@ const compare = (doc: DBDocType<any>, query: QueryType): boolean => {
       res = val.some((valT: any) => valT === comp)
       break
     default:
+      const plugin = queryPlugins.get(op)
+
+      if (plugin) return plugin(query.key, getOrCreateIndex({ doc, query }), comp)
+
       return false
   }
 
@@ -137,6 +144,7 @@ export const runQuery = (
   nestedOp_?: Operators
 ): DBDocType<any>[] => {
   let queries: QueryType[] = []
+  const queryPlugins = col.db.queryHandlers
   // Debugger variable
   const _ = nested_
     ? nested_.extend(`<query>${nestedOp_}`)
@@ -240,7 +248,7 @@ export const runQuery = (
 
           break
         default:
-          docs = docs.filter(doc => compare(doc, query))
+          docs = docs.filter(doc => compare(doc, query, queryPlugins))
           break
       }
     }
@@ -259,7 +267,7 @@ export const runQuery = (
 type WhereCallback = (query: QueryBuilderType) => QueryBuilderType
 
 /**
- * Helper function to easily generate queries
+ * Helper class to easily generate queries
  * @example Simple example showing a basic set of where's (&& together) to get documents with a value between (inclusive) 40 and 50
  * ```typescript
  * const query = QueryBuilder
@@ -414,5 +422,32 @@ export class QueryBuilder implements QueryBuilderType {
     const { queries } = queryFunc(new QueryBuilder())
 
     return QueryBuilder.where('', '&&', queries)
+  }
+}
+
+/**
+ * Helper class to create Query handlers for addition into a database
+ * 
+ * @category Query
+ * @category Core
+ */
+export class QueryHandler implements QueryHandlerType {
+  /** Event type of this handler */
+  operator: string
+
+  /**
+   * Handler function for this event type.
+   * This function will get called in order of addition to the DB
+   */
+  func: (key: string, value: any, comparison: any) => boolean
+
+  /**
+   * Create a new EventHandler to handle events in MemsDB
+   * @param eventType MemsDB event type to be handled
+   * @param func Function to run on event
+   */
+  constructor(operator: string, func: (key: string, value: any, comparison: any) => boolean) {
+    this.operator = operator
+    this.func = func
   }
 }

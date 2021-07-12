@@ -87,7 +87,7 @@ export const nestedKey = (
           // Flatten the array to the length of how many keys there are
           .flat(keys.length + 1)
           // Filter out undefined results
-          .filter((val) => val !== undefined)
+          .filter((val: any) => val !== undefined)
       }
       // Otherwise just set the tmpProp to the key requested and coninue on
       else {

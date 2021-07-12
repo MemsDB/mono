@@ -19,8 +19,7 @@ export const updateReactiveIndex = <T>(
 ) => {
   const ref = collection.reactiveIndexed.get(query) as { docs: DBDocType<T>[] }
 
-  ref.docs.length = 0
-  ref.docs.push(...runQuery(query, collection, collection.docs))
+  ref.docs = runQuery(query, collection, collection.docs)
 }
 
 /**
@@ -36,6 +35,8 @@ export const createReactiveIndex = <T>(
   if (!collection.reactiveIndexed.has(query)) {
     const docs = runQuery(query, collection, collection.docs)
     collection.reactiveIndexed.set(query, { docs })
+
+    return { docs }
   }
 
   return collection.reactiveIndexed.get(query) as { docs: DBDocType<T>[] }

@@ -5,7 +5,8 @@ import type {
   EventHandlersType,
   MemsDBEvent,
 } from './DBEventHandler'
-import { Query, QueryBuilder } from './Query'
+import type { Query, QueryBuilder } from './Query'
+import type { QueryHandler, QueryHandlerFunction } from './QueryHandler'
 import type { StorageProvider } from './StorageProvider'
 
 export interface DBAddCollectionOpts {
@@ -25,10 +26,11 @@ export declare class DB{
   }
 
   /** Storage engine to use for storing document data */
-  readonly storageEngine: StorageProvider
+  storageEngine: StorageProvider<any>
 
   /**
-   * Construct a new in memory db with the provided collection references
+   * Construct a new in db with the provided collection references.
+   * This defaults to in memory document storage and void backups
    * @param name Name of database
    * @param opts Options object to modify DB behaviour (mostly unused)
    */
@@ -51,9 +53,17 @@ export declare class DB{
       /**
        * Storage provider for document data
        */
-      storageEngine?: StorageProvider
+      storageEngine?: StorageProvider<any>
     }
   )
+
+  queryHandlers: Map<string, QueryHandlerFunction>
+
+  /**
+   * Add additional query operators/handlers to the search functionality
+   * @param queryHandler QueryHandler to add
+   */
+  addQueryHandler(queryHandler: QueryHandler): void
 
   /**
    * Add an EventHandler class to the DB
@@ -137,6 +147,8 @@ export declare class DBCollection<T extends { [key: string]: any }> {
   readonly schema: T
   /** Document array */
   docs: DBDoc<T>[]
+  
+  idMap: Map<string, DBDoc<T>>
   /** Debugger variable */
   readonly col_: debug.Debugger
   /** Reference to the DB object */
@@ -181,7 +193,7 @@ export declare class DBCollection<T extends { [key: string]: any }> {
    * Insert a new document into the array. Defaults will be loaded from the schema
    * @param opts Insert document options
    */
-  insertOne(opts: DBCollectionInsertOpts): DBDoc<T>
+  insertOne(opts: DBCollectionInsertOpts<T>): DBDoc<T>
 
   /**
    * Alias of insertOne
@@ -212,7 +224,7 @@ export declare class DBCollection<T extends { [key: string]: any }> {
   toJSON(): string
 }
 
-export interface DBDocCustomPopulateOpts {
+export interface DBDocCustomPopulateOpts <T>{
   /* Where on the source doc to compare to */
   srcField: string
   /* Where on the comparison doc to compare to */
@@ -220,14 +232,14 @@ export interface DBDocCustomPopulateOpts {
   /* Where to place the child documents matching this query */
   destinationField: string
   /* The collection to pull child documents from for this query */
-  collection: DBCollection
-  targetCol: DBCollection
+  collection: DBCollection<T>
+  targetCol: DBCollection<T>
   query: Query[]
   unwind: boolean
 }
 
-export interface DBDocTreeOpts {
-  populations?: DBDocCustomPopulateOpts[]
+export interface DBDocTreeOpts<T> {
+  populations?: DBDocCustomPopulateOpts<T>[]
   maxDepth?: number
   currentDepth?: number
 }
@@ -334,7 +346,7 @@ export declare class DBDoc<T> {
    * populate (`doc.populate(...)`) function instead.
    * @param opts Options for the populate. Things like the target field and query don't have to be set
    */
-  customPopulate(opts: DBDocCustomPopulateOpts): DBDoc<any>
+  customPopulate(opts: DBDocCustomPopulateOpts<T>): DBDoc<any>
 
   /**
    * Populate a tree of documents. It's recommended you use the provided
@@ -342,7 +354,7 @@ export declare class DBDoc<T> {
    * @param opts Options for making a tree from the provided document
    * @returns A cloned version of this doc that has the data field formatted into a tree
    */
-  tree(opts?: DBDocTreeOpts): DBDoc<any>
+  tree(opts?: DBDocTreeOpts<T>): DBDoc<any>
 
   /**
    * Duplicate this document, making mutations to it not affect the original

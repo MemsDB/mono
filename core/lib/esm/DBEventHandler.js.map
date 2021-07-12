@@ -1,0 +1,1 @@
+{"version":3,"file":"DBEventHandler.js","sourceRoot":"","sources":["../../src/DBEventHandler.ts"],"names":[],"mappings":"AAEA;;GAEG;AACH,MAAM,OAAO,YAAY;IAUvB;;;;OAIG;IACH,YAAY,SAAoB,EAAE,IAAkC;QAXpE;;;WAGG;QACH,SAAI,GAAiC,GAAG,EAAE,GAAE,CAAC,CAAA;QAQ3C,IAAI,CAAC,SAAS,GAAG,SAAS,CAAA;QAE1B,IAAI,CAAC,IAAI,GAAG,IAAI,CAAA;IAClB,CAAC;CACF"}

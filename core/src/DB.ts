@@ -14,6 +14,7 @@ import type {
   EventHandlersType,
   EventName,
 } from '@memsdb/types'
+import type { QueryHandler, QueryHandlerFunction } from '@memsdb/types/QueryHandler'
 
 const memsdb_ = debug('memsdb')
 
@@ -35,7 +36,9 @@ export class DB implements DBType {
    */
   private eventHandlers: Map<EventName, EventHandlerType[]> = new Map()
 
-  readonly storageEngine: StorageProviderType<any>
+  storageEngine: StorageProviderType<any>
+
+  queryHandlers: Map<string, QueryHandlerFunction> = new Map()
 
   /**
    * Construct a new in memory db with the provided collection references
@@ -65,7 +68,7 @@ export class DB implements DBType {
     } = {}
   ) {
     this.name = name
-    this.db_ = memsdb_.extend(`<db>${name}`)
+    const _ = this.db_ = memsdb_.extend(`<db>${name}`)
 
     const {
       useDynamicIndexes = false,
@@ -82,6 +85,7 @@ export class DB implements DBType {
     this.storageEngine = storageEngine
 
     if (eventHandlers) {
+      /* DEBUG */ _('Adding event handlers')
       const eventTypes = Object.keys(eventHandlers)
 
       const addEventHandler = (type: EventName, handler: EventHandlerType) => {
@@ -107,14 +111,21 @@ export class DB implements DBType {
   }
 
   /**
+   * Add custom query handlers to allow for custom filtering
+   * @param queryHandler QueryHandler or QueryHandler array to add to the map.
+   */
+  addQueryHandler(queryHandler: QueryHandler | QueryHandler[]) {
+    if (Array.isArray(queryHandler)) queryHandler.forEach(this.addQueryHandler)
+    else this.queryHandlers.set(queryHandler.operator, queryHandler.func)
+  }
+
+  /**
    * Add an EventHandler class to the DB
    * @param eventHandler EventHandler or array of EventHandler classes to add to the DB
    */
   addEventHandler(eventHandler: EventHandler | EventHandler[]) {
     const addHandler = (handler: EventHandler) => {
       const handlerType = handler.eventType
-
-      const keys = Object.keys(this.eventHandlers)
 
       const evHandlers = this.eventHandlers.get(handlerType)
 
@@ -173,13 +184,14 @@ export class DB implements DBType {
    * @param replace Replace the specified collection if it exists
    */
   addCollection(collection: DBCollectionType<any>, opts = { replace: false }) {
-    /* DEBUG */ this.db_(
+    const _ = this.db_.extend('addCollection')
+    /* DEBUG */ _(
       'Adding collection `%s` to DB. Replace if it already exists:',
       collection.name,
       opts.replace ? 'true' : 'false'
     )
 
-    /* DEBUG */ this.db_('Emitting event "EventDBAddCollection"')
+    /* DEBUG */ _('Emitting event "EventDBAddCollection"')
     this.emitEvent({
       event: 'EventDBAddCollection',
       collection,
@@ -188,8 +200,10 @@ export class DB implements DBType {
 
     const hasCollection = this.collections.has(collection.name)
 
-    if (!hasCollection || opts.replace)
+    if (!hasCollection || opts.replace) {
+      /* DEBUG */ _('Replacing or setting collection')
       this.collections.set(collection.name, collection)
+    }
 
     return collection
   }
@@ -199,13 +213,14 @@ export class DB implements DBType {
    * @param name Collection name to delete
    */
   deleteCollection(name: string) {
+    const _ = this.db_.extend('deleteCollection')
     try {
-      /* DEBUG */ this.db_('Removing collection `%s` from DB', name)
+      /* DEBUG */ _('Removing collection `%s` from DB', name)
       const collection = this.collections.get(name)
       
       if (!collection) return this;
 
-      /* DEBUG */ this.db_('Emitting event "EventDBAddCollection"')
+      /* DEBUG */ _('Emitting event "EventDBAddCollection"')
       this.emitEvent({
         event: 'EventDBDeleteCollection',
         collection: collection,
@@ -215,19 +230,19 @@ export class DB implements DBType {
 
       this.collections.delete(name)
 
-      /* DEBUG */ this.db_('Emitting event "EventDBDeleteCollectionComplete"')
+      /* DEBUG */ _('Emitting event "EventDBDeleteCollectionComplete"')
       this.emitEvent({
         event: 'EventDBDeleteCollectionComplete',
         name,
         success: true,
       })
     } catch (err) {
-      /* DEBUG */ this.db_(
+      /* DEBUG */ _(
         "Collection deletion failed successfully, collection `%s` doesn't exist",
         name
       )
 
-      /* DEBUG */ this.db_(
+      /* DEBUG */ _(
         'Emitting event "EventDBDeleteCollectionComplete" with error'
       )
       this.emitEvent({
@@ -247,18 +262,19 @@ export class DB implements DBType {
    * @param name Empty out a specified collection
    */
   emptyCollection(name: string) {
+    const _ = this.db_.extend('emptyCollection')
     const collection = this.collection(name)
     if (!collection) return this
     
     try {
 
-      /* DEBUG */ this.db_(
+      /* DEBUG */ _(
         'Emptying collection `%s`. Current document count: %d',
         name,
         collection.docs.length
       )
 
-      /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection"')
+      /* DEBUG */ _('Emitting event "EventDBEmptyCollection"')
       this.emitEvent({
         event: 'EventDBEmptyCollection',
         collection: collection,
@@ -266,25 +282,25 @@ export class DB implements DBType {
 
       collection.docs.forEach(doc => doc.delete())
       collection.docs.length = 0
-      /* DEBUG */ this.db_(
+      /* DEBUG */ _(
         'Emptying collection `%s` completed. Current document count: %d',
         name,
         collection.docs.length
       )
 
-      /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection"')
+      /* DEBUG */ _('Emitting event "EventDBEmptyCollection"')
       this.emitEvent({
         event: 'EventDBEmptyCollectionComplete',
         collection: collection,
         success: true,
       })
     } catch (err) {
-      /* DEBUG */ this.db_(
+      /* DEBUG */ _(
         'Emptying collection `%s` failed as it does not exist.',
         name
       )
 
-      /* DEBUG */ this.db_('Emitting event "EventDBEmptyCollection" with error')
+      /* DEBUG */ _('Emitting event "EventDBEmptyCollection" with error')
       this.emitEvent({
         event: 'EventDBEmptyCollectionComplete',
         collection,
@@ -300,10 +316,11 @@ export class DB implements DBType {
    * Backup collection data to the provided BackupProvider.
    */
   backup() {
-    /* DEBUG */ this.db_('Starting backup')
+    const _ = this.db_.extend('backup')
+    /* DEBUG */ _('Starting backup')
     const backup: Backup = {}
 
-    /* DEBUG */ this.db_('Serialising collections')
+    /* DEBUG */ _('Serialising collections')
     this.collections.forEach((collection, key) => {
       const keys = Object.keys(collection.schema)
       const values = collection.docs.map(doc => [
@@ -318,29 +335,29 @@ export class DB implements DBType {
         values,
       }
     })
-    /* DEBUG */ this.db_('Data structure created for backup')
+    /* DEBUG */ _('Data structure created for backup')
 
-    /* DEBUG */ this.db_('Emitting event "EventDBBackup"')
+    /* DEBUG */ _('Emitting event "EventDBBackup"')
     this.emitEvent({
       event: 'EventDBBackup',
       backup,
     })
 
-    /* DEBUG */ this.db_('Backing up database to BackupProvider')
+    /* DEBUG */ _('Backing up database to BackupProvider')
     const backedUp = this.options.backupProvider.save(backup)
-    /* DEBUG */ this.db_(
+    /* DEBUG */ _(
       'Backed up to BackupProvider, status: %s',
       backedUp ? 'success' : 'failed'
     )
 
-    /* DEBUG */ this.db_('Emitting event "EventDBBackupComplete"')
+    /* DEBUG */ _('Emitting event "EventDBBackupComplete"')
     this.emitEvent({
       event: 'EventDBBackupComplete',
       backup,
       status: backedUp ? 'success' : 'failed',
     })
 
-    /* DEBUG */ this.db_(
+    /* DEBUG */ _(
       'Backup finished, result: %s',
       backedUp ? 'Data backed up' : 'Data NOT backed up'
     )
@@ -351,20 +368,21 @@ export class DB implements DBType {
    * BackupProvider. This won't overwrite any documents
    */
   restore() {
-    /* DEBUG */ this.db_('Restoring database collections from BackupProvider')
+    const _ = this.db_.extend('restore')
+    /* DEBUG */ _('Restoring database collections from BackupProvider')
     const backup = this.options.backupProvider.load()
 
-    /* DEBUG */ this.db_('Emitting event "EventDBRestore"')
+    /* DEBUG */ _('Emitting event "EventDBRestore"')
     this.emitEvent({
       event: 'EventDBRestore',
       backup,
     })
 
-    /* DEBUG */ this.db_('Collection data loaded from BackupProvider')
+    /* DEBUG */ _('Collection data loaded from BackupProvider')
 
     const collectionKeys = Object.keys(backup)
 
-    /* DEBUG */ this.db_('%d collections to restore', collectionKeys.length)
+    /* DEBUG */ _('%d collections to restore', collectionKeys.length)
 
     collectionKeys.forEach(colKey => {
       const col = this.collection(colKey)
@@ -388,12 +406,12 @@ export class DB implements DBType {
       })
     })
 
-    /* DEBUG */ this.db_('Emitting event "EventDBRestoreComplete"')
+    /* DEBUG */ _('Emitting event "EventDBRestoreComplete"')
     this.emitEvent({
       event: 'EventDBRestoreComplete',
       backup,
     })
 
-    /* DEBUG */ this.db_('Database restored')
+    /* DEBUG */ _('Database restored')
   }
 }

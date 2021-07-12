@@ -20,10 +20,11 @@ export interface PopulateQuery {
   ref?: DBCollectionType<any>
   children?: PopulateQuery[]
   isArr?: boolean
-  remote?: string
+  remoteLocalComparisonKey?: string
+  remoteExternalKey?: string
 }
 
-type TokenType = 'key' | 'ref' | 'remote'
+type TokenType = 'key' | 'ref' | 'remoteLocalComparisonKey' | 'remoteExternalKey'
 
 /**
  * Tokenify a string array into a usable token array for MemsPL
@@ -59,6 +60,16 @@ const tokenify = (strArr: string[] = [], tokenArr: string[] = []): string[] => {
         if (token !== '') pushAndReset()
         tokenArr.push(char)
         continue
+      case ':':
+        const lastToken = tokenArr[tokenArr.length - 1]
+        if (lastToken && lastToken === '(') {
+          if (token !== '') pushAndReset()
+          tokenArr.push(char)
+          continue
+        } else {
+          token += char
+          continue
+        }
 
       // newlines, tabs and commas end the current token and continue
       case `\n`:
@@ -125,12 +136,16 @@ const createQueries = (
       // Start population of array from a remote key
       case '(':
         /* DEBUG */ __('--%s--, Opening remote key', token)
-        nextTokenType = 'remote'
+        nextTokenType = 'remoteLocalComparisonKey'
         continue
 
+      case ':':
+        nextTokenType = 'remoteExternalKey'
+        continue
       // End population of remote key
       case ')':
-        /* DEBUG */ __('--%s--, Closing remote key')
+        /* DEBUG */ __('--%s--, Closing remote key', token)
+        nextTokenType = 'key'
         continue
 
       // Start child queries
@@ -181,7 +196,8 @@ const createQueries = (
         // Set the ref or key to the current token
         switch (nextTokenType) {
           case 'key':
-          case 'remote':
+          case 'remoteLocalComparisonKey':
+          case 'remoteExternalKey':
             cur[nextTokenType] = token
             break
           case 'ref':
@@ -191,13 +207,18 @@ const createQueries = (
 
         // Continue the while loop when if there are:
         // - More tokens
-        // - The next token is an array/object opener
+        // - The next token is an array/object/remote opener
+        // - The next token is a remote local or external key
         // - Or if we're still in a reference declaration (gets reset next token)
         if (
           tokenArr.length > 0 &&
           ((nextTokenType === 'key' &&
-            (tokenArr[0] === '{' || tokenArr[0] === '[')) ||
-            nextTokenType === 'ref')
+            (tokenArr[0] === '{' ||
+              tokenArr[0] === '[' ||
+              tokenArr[0] === '(')) ||
+            nextTokenType === 'ref' ||
+            nextTokenType === 'remoteExternalKey' ||
+            nextTokenType === 'remoteLocalComparisonKey')
         )
           continue
         // Otherwise push the current object to the queries list and reset
@@ -243,7 +264,7 @@ const ParseMemsPL = (
   // Split the input query into an array of tokens
   const tokens = tokenify(strArr)
 
-  __('Parsed tokens: %s', JSON.stringify(tokens, undefined, 2))
+  __('Parsed tokens: %O', tokens)
 
   // Convert the token array into a JS structure for querying later
   const queries = createQueries(
@@ -254,9 +275,20 @@ const ParseMemsPL = (
     __
   ) as PopulateQuery[]
 
-  __('Parsed queries: %s', JSON.stringify(queries, undefined, 2))
+  __('Parsed queries: %O', queries)
 
   return queries
+}
+
+const getKeyValue = <T>(doc: DBDocType<T>, key: string) => {
+  switch (key) {
+    case 'id':
+    case '_updatedAt':
+    case '_createdAt':
+      return doc[key]
+    default:
+      return nestedKey(doc.data, key)
+  }
 }
 
 /**
@@ -281,6 +313,31 @@ const ParseMemsPL = (
  *   dateCreated
  * `)
  * ```
+ * @example populating the submissions key for a user where the author is equal to the users document ID
+ * ```typescript
+ * populate(`
+ *   <submissions>(:author)submissions
+ * `)
+ * ```
+ * @example populating the submissions key for a user where the author is equal to the username field on the users document
+ * ```json
+ * // Users
+ * {
+ *    "username": "string",
+ * }
+ * // Submissions
+ * {
+ *    "author": "string",
+ *    "content": "string"
+ * }
+ * ```
+ * ```typescript
+ * populate(`
+ *   <submissions>(username:author)submissions{
+ *      content
+ *   }
+ * `)
+ * ```
  * [[include:populate.md]]
  */
 export const populate = <T>(
@@ -296,8 +353,10 @@ export const populate = <T>(
 
   const filterDoc = (doc: DBDocType<any>, keys: string[]) => {
     const toRemove = Object.keys(doc.data).filter(key => !keys.includes(key))
-
-    toRemove.forEach(key => delete doc.data[key])
+    const pluginData = doc._pluginData.get('internal:cloned')
+    toRemove.forEach(key => {
+      delete pluginData[key]
+    })
   }
 
   /**
@@ -319,6 +378,12 @@ export const populate = <T>(
 
     runPop_('List of keys to keep on document: %O', keysList)
 
+    const mapArray = (arr: any[], query: PopulateQuery) => arr.map((str: string) =>
+      query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', str)) : query.ref?.id(str)
+    )
+
+    const remoteLocalValOrID = <T>(keyVal: string, query: PopulateQuery) => query.remoteExternalKey ? (<DBCollectionType<T>>query.ref).find(QueryBuilder.where(query.remoteExternalKey, '===', keyVal)) : [query.ref?.id(keyVal)]
+
     // Go down the array of queries to populate documents
     for (let i = 0; i < queries.length; i++) {
       const query = queries[i]
@@ -331,22 +396,15 @@ export const populate = <T>(
       duped.forEach(doc => {
         let nestedKeyVal: any
         if (query) {
-          switch (query.key) {
-            case 'id':
-            case '_updatedAt':
-            case '_createdAt':
-              nestedKeyVal = doc[query.key]
-              break
-            default:
-              nestedKeyVal = nestedKey(doc.data, query.key)
-              break
-          }
+          nestedKeyVal = getKeyValue(doc, query.remoteLocalComparisonKey || query.key)
         }
 
         /* DEBUG */ runPop_('nestedKeyVal Key: %s', query?.key)
         /* DEBUG */ runPop_('nestedKeyVal Val: %O', nestedKeyVal)
 
-        if (query?.ref) {
+        if (!query) return;
+
+        if (query.ref) {
           // Handle if there are child queries and there's a ref set
           if (query?.children) {
             // Handle whether the key to populate is an array or not
@@ -354,13 +412,15 @@ export const populate = <T>(
               let childDocs: any[] = []
               if (nestedKeyVal) {
                 if (Array.isArray(nestedKeyVal)) {
-                  childDocs = nestedKeyVal.map((id: string) =>
-                    query.ref?.id(id)
-                  )
+                  childDocs = mapArray(nestedKeyVal, query)
                 } else {
                   /* DEBUG */ runPop_('nestedKeyVal is not an array')
-                  childDocs = [query.ref?.id(nestedKeyVal)]
+                  
+                  childDocs = remoteLocalValOrID(nestedKeyVal, query)
                 }
+              } else if (query.remoteLocalComparisonKey && query.remoteExternalKey) {
+                const localComparison = getKeyValue(doc, query.remoteLocalComparisonKey)
+                childDocs = query.ref.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison))
               } else {
                 /* DEBUG */ runPop_('No provided nestedKeyVal')
               }
@@ -373,20 +433,25 @@ export const populate = <T>(
             else {
               /* DEBUG */ runPop_("Query isn't on an array")
               // Find the document
-              const childDoc = query.ref.id(nestedKeyVal)
+              const localComparison = query.remoteLocalComparisonKey ? getKeyValue(doc, query.remoteLocalComparisonKey) : nestedKeyVal
+              const childDoc = query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison)
+
+              if (query.remoteExternalKey) {
+                console.log(QueryBuilder.where(query.remoteExternalKey, '===', localComparison))
+              }
 
               // If the child document exists, run a population on it
-              if (childDoc) {
+              if (childDoc && (!Array.isArray(childDoc) || childDoc.length > 0)) {
                 // Run runPopulate on it with the child queries
                 const childPopulated = runPopulate(
                   query.children,
-                  [childDoc],
+                  Array.isArray(childDoc) ? childDoc : [childDoc],
                   runPop_
                 )
 
                 // Set the key to the first result of the runPopulate if it exists
                 if (childPopulated.length > 0)
-                  doc.set(query.key, childPopulated[0])
+                  doc.set(query.key, Array.isArray(childDoc) ? childPopulated : childPopulated[0])
               }
             }
           }
@@ -397,20 +462,12 @@ export const populate = <T>(
             if (query.isArr || Array.isArray(nestedKeyVal)) {
               doc.set(
                 query.key,
-                nestedKeyVal.map((id: string) => {
-                  if (query.ref) {
-                    const childDoc = query.ref.id(id)
-
-                    if (childDoc) return childDoc
-                  }
-
-                  return id
-                })
+                mapArray(nestedKeyVal, query)
               )
             }
             // Otherwise just do the single population
             else {
-              const childDoc = query.ref.id(nestedKeyVal)
+              const childDoc = remoteLocalValOrID(nestedKeyVal, query)
 
               if (childDoc) doc.set(query.key, childDoc)
             }
@@ -419,12 +476,12 @@ export const populate = <T>(
           /* DEBUG */ runPop_('No ref')
         }
 
-        if (query?.remote && query?.ref) {
-          doc.set(
-            query.key,
-            query.ref.find(QueryBuilder.where(query.remote, '===', doc.id))
-          )
-        }
+        // if (query?.remote && query?.ref) {
+        //   doc.set(
+        //     query.key,
+        //     query.ref.find(QueryBuilder.where(query.remote, '===', doc.id))
+        //   )
+        // }
 
         if (filter) {
           /* DEBUG */ runPop_('Removing unnecessary keys from document')

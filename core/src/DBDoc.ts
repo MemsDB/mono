@@ -38,6 +38,8 @@ export class DBDoc<T> implements DBDocType<T> {
   /** Object for any plugin related data */
   _pluginData: DBDocType<T>['_pluginData'] = new Map()
 
+  private dataCache: Map<string, any> = new Map()
+
   /**
    * Construct a new Document with the collections schema and any provided data
    * @param data Data to be assigned to the document schema
@@ -54,46 +56,65 @@ export class DBDoc<T> implements DBDocType<T> {
     // Ensure the document has a valid and unique ID
     this.id = id
 
+    const _ = this.doc_ = collection.col_.extend(`<doc>${this.id}`)
+
     this.isCloned = isCloned
 
     // Ensure this.data is a replica of the schema before assigning the new data
-    this.setData(merge(cloneDeep(this.collection.schema), cloneDeep(data)))
+    this.setData(merge(cloneDeep(this.collection.schema), cloneDeep(data)), true)
 
     // Assign the data to the new document
-    this.doc_ = collection.col_.extend(`<doc>${this.id}`)
+    /* DEBUG */ _('Document %s constructed', this.id)
   }
 
+  private updatePathsCache: Map<string, any> = new Map()
+
   private updateIndexes = debounce((path: string) => {
-    /* DEBUG */ this.collection.col_(
-      'Document %s was modified at path %s',
-      this.id,
+    const _ = this.doc_.extend(`updateIndexes`)
+
+    /* DEBUG */ _(
+      'Document was modified at path %s',
       path
     )
     this._updatedAt = Date.now()
-    if (Object.keys(this.indexed).length > 0) {
+    if (this.indexed.size > 0) {
+      /* DEBUG */ _('Indexes in collection, updating each collection index')
       for (const key in this.indexed) {
         updateDocIndex<T>(this as DBDocType<T>, key)
-        this.collection.col_('Updated index "%s" for document %s', key, this.id)
+        _('Updated index "%s" for document %s', key, this.id)
       }
+      /* DEBUG */ _('Finished updating %d indexes', this.indexed.size)
     }
-    for (const key of this.collection.reactiveIndexed.keys()) {
-      updateReactiveIndex(this.collection, key)
-      this.collection.col_('Updated collection reactive index for key %j', key)
+
+    if (this.collection.reactiveIndexed.size > 0) {
+      /* DEBUG */ _('Updating reactive indexes')
+      for (const key of this.collection.reactiveIndexed.keys()) {
+        updateReactiveIndex(this.collection, key)
+        /* DEBUG */ _('Updated collection reactive index for key %j', key)
+      }
+      /* DEBUG */ _('Finished updating %d reactive indexes', this.collection.reactiveIndexed.size)
     }
-    /* DEBUG */ this.collection.col_(
+    
+    /* DEBUG */ _(
       'Emitting event "EventCollectionDocumentUpdated"'
     )
+
     this.collection.emitEvent({
       event: 'EventCollectionDocumentUpdated',
       doc: this,
       collection: this.collection,
+      paths: this.updatePathsCache,
     })
+
+    this.updatePathsCache.clear()
   }, 300)
 
   /**
    * The data of the document as provided by the storage provider
    */
   get data() {
+    const _ = this.doc_.extend('data:get')
+
     let data
 
     const details = {
@@ -102,11 +123,33 @@ export class DBDoc<T> implements DBDocType<T> {
       id: this.id,
     }
 
-    if (this.isCloned) {
-      data = this.pluginData.get('internal:cloned')
-    } else {
-      data = this.collection.db.storageEngine.load(this)
+    const cached = this.dataCache.get('root')
+
+    if (cached) {
+      /* DEBUG */ _('dataCache present, returning cache')
+      return { ...cached, ...details }
     }
+
+    if (this.isCloned) {
+      /* DEBUG */ _('Document is cloned, retrieving internal cloned data')
+      data = this.pluginData.get('internal:cloned')
+      /* DEBUG */ _('Retreived internal cloned data')
+    } else {
+      /* DEBUG */ _('Retrieving data from storage engine')
+      data = this.collection.db.storageEngine.load(this)
+      /* DEBUG */ _('Data retrieved from storage engine')
+    }
+
+    /* DEBUG */ _('Setting dataCache')
+    this.dataCache.set('root', data)
+
+    /* DEBUG */ _('Initialising dataCache auto-delete countdown')
+    setTimeout(() => {
+      /* DEBUG */ _('Clearing dataCache')
+      this.dataCache.delete('root')
+    }, 300)
+
+    /* DEBUG */ _('Returning data')
 
     return { ...data, ...details }
   }
@@ -121,20 +164,26 @@ export class DBDoc<T> implements DBDocType<T> {
    * @returns Returns nothing
    */
   set(key: string, data: any) {
+    this.updatePathsCache.set(key, data)
+
+    const _ = this.doc_.extend('data:set')
     const docData = this.data
 
-    if (data === '') {
-      return
-    } else {
-      docData[key] = data
-    }
+    /* DEBUG */_('Setting key `%s`')
+    docData[key] = data
 
     if (this.isCloned) {
+      /* DEBUG */_('Document is a clone, not saving or updating document or indexes')
       this.pluginData.set('internal:cloned', docData)
     } else {
+      /* DEBUG */_('Saving document')
       this.collection.db.storageEngine.save(this, docData)
+      /* DEBUG */_('Finished saving document, Updating indexes')
       this.updateIndexes(key)
+      /* DEBUG */_('Finished updating indexes')
     }
+
+    this.dataCache.delete('root')
   }
 
   /**
@@ -143,13 +192,25 @@ export class DBDoc<T> implements DBDocType<T> {
    * This will completely replace the data object
    * @param data Data to set
    */
-  setData(data: any) {
+  setData(data: any, initial = false) {
+    const _ = this.doc_.extend('data:setData')
+    this.updatePathsCache.set('root', data)
+
     if (this.isCloned) {
+      /* DEBUG */ _('Document is a clone, setting internal data instead of to storage engine')
       this.pluginData.set('internal:cloned', data)
+      /* DEBUG */ _('Finished setting document plugin data')
     } else {
+      /* DEBUG */_('Saving document')
       this.collection.db.storageEngine.save(this, data)
-      this.updateIndexes('root')
+      if (!initial) {
+        /* DEBUG */_('Finished saving document, Updating indexes')
+        this.updateIndexes('root')
+        /* DEBUG */_('Finished updating indexes')
+      }
     }
+
+    this.dataCache.delete('root')
   }
 
   /**
@@ -162,7 +223,10 @@ export class DBDoc<T> implements DBDocType<T> {
      * @returns Data from the plugin
      */
     get: (plugin: string) => {
-      return this._pluginData.get(plugin)
+      const _ = this.doc_.extend('pluginData:get')
+      const data = this._pluginData.get(plugin)
+      /* DEBUG */ _('Data retrieved for plugin `%s`', plugin)
+      return data
     },
     /**
      * Set/replace the data object for a plugin
@@ -170,14 +234,18 @@ export class DBDoc<T> implements DBDocType<T> {
      * @param data Data to replace the plugin data with
      */
     set: (plugin: string, data: any) => {
+      const _ = this.doc_.extend('pluginData:set')
       this._pluginData.set(plugin, data)
+      /* DEBUG */ _('Data set for plugin `%s`', plugin)
     },
     /**
      * Delete the data object of a specific plugin
      * @param plugin Plugin name to delete data of
      */
     delete: (plugin: string) => {
+      const _ = this.doc_.extend('pluginData:delete')
       this._pluginData.delete(plugin)
+      /* DEBUG */ _('Deleted plugin data for plugin `%s`', plugin)
     },
   }
 
@@ -185,33 +253,47 @@ export class DBDoc<T> implements DBDocType<T> {
    * Delete this document from the db
    */
   delete() {
+    const _ = this.doc_.extend('delete')
     try {
-      /* DEBUG */ this.doc_('Emitting event "EventDocumentDelete"')
+      /* DEBUG */ _('Emitting event "EventDocumentDelete"')
       this.emitEvent({
         event: 'EventDocumentDelete',
         doc: this,
       })
 
-      /* DEBUG */ this.doc_('Splicing document from collection')
+      /* DEBUG */ _('Splicing document from collection')
       this.collection.docs.splice(
         this.collection.docs.findIndex((val: any) => val === this),
         1
       )
+      this.collection.idMap.delete(this.id)
 
-      for (const key of this.collection.reactiveIndexed.keys()) {
-        /* DEBUG */ this.doc_('Updating reactive index')
-        updateReactiveIndex(this.collection, key)
+      /* DEBUG */ _('Deleting document data')
+      if (this.isCloned) {
+        /* DEBUG */ _('Document is cloned, removing plugin data')
+        this.pluginData.delete('internal:cloned')
+      } else {
+        /* DEBUG */ _('Deleting document data from storage engine')
+        this.collection.db.storageEngine.delete(this)
+        /* DEBUG */ _('Deleted document data from storage engine')
       }
 
-      /* DEBUG */ this.doc_('Emitting event "EventDocumentDeleteComplete"')
+      /* DEBUG */ _('Updating reactive indexes')
+      for (const key of this.collection.reactiveIndexed.keys()) {
+        /* DEBUG */ _('Updating reactive index')
+        updateReactiveIndex(this.collection, key)
+      }
+      /* DEBUG */ _('Updated reactive indexes')
+
+      /* DEBUG */ _('Emitting event "EventDocumentDeleteComplete"')
       this.emitEvent({
         event: 'EventDocumentDeleteComplete',
         id: this.id,
         success: true,
       })
     } catch (err) {
-      /* DEBUG */ this.doc_('Failed to delete this document, %J', err)
-      /* DEBUG */ this.doc_(
+      /* DEBUG */ _('Failed to delete this document `%s`, %J', (<Error>err).message,  err)
+      /* DEBUG */ _(
         'Emitting event "EventDocumentDeleteComplete" with error'
       )
       this.emitEvent({
@@ -230,7 +312,10 @@ export class DBDoc<T> implements DBDocType<T> {
    * @returns Cloned version of this document
    */
   populate(populateQuery: string, filter = false): DBDoc<T> {
+    const _ = this.doc_.extend('populate')
+    /* DEBUG */ _('Running populate on document')
     const [populated] = populate<T>(this.collection, [this], populateQuery, filter)
+    /* DEBUG */ _('Finished populating document')
 
     return populated as DBDoc<T>
   }
@@ -244,12 +329,12 @@ export class DBDoc<T> implements DBDocType<T> {
    * populate (`doc.populate(...)`) function instead.
    * @param opts Options for the populate. Things like the target field and query don't have to be set
    */
-  customPopulate(opts: DBDocCustomPopulateOpts) {
+  customPopulate(opts: DBDocCustomPopulateOpts<T>) {
     // Debugger variable
-    const populate_ = this.doc_.extend('customPopulate')
+    const _ = this.doc_.extend('customPopulate')
 
     // Construct a new document based on the original so as to not perform a mutation
-    /* DEBUG */ populate_(
+    /* DEBUG */ _(
       'Creating identical document so as to avoid mutations'
     )
     const resultDoc = this.clone()
@@ -278,18 +363,18 @@ export class DBDoc<T> implements DBDocType<T> {
       unwind = false,
     } = opts
 
-    /* DEBUG */ populate_(
+    /* DEBUG */ _(
       'Populating document `%s` field with results from `%s.%s`',
       destinationField,
       targetCol,
       targetField
     )
 
-    /* DEBUG */ populate_('Finding child documents')
+    /* DEBUG */ _('Finding child documents')
     const queriedDocuments = targetCol.find({ queries: query })
 
     // Set a specific field to the results of the query, unwinding if necessary
-    /* DEBUG */ populate_(
+    /* DEBUG */ _(
       'Setting field on document to contain children. Unwind: %s',
       unwind ? 'true' : 'false'
     )
@@ -311,7 +396,7 @@ export class DBDoc<T> implements DBDocType<T> {
     })
 
     // Return the copied document and not the original
-    /* DEBUG */ populate_('Finished populating field, returning ghost document')
+    /* DEBUG */ _('Finished populating field, returning ghost document')
     return resultDoc
   }
 
@@ -321,7 +406,7 @@ export class DBDoc<T> implements DBDocType<T> {
    * @param opts Options for making a tree from the provided document
    * @returns A cloned version of this doc that has the data field formatted into a tree
    */
-  tree(opts: DBDocTreeOpts = {}) {
+  tree(opts: DBDocTreeOpts<T> = {}) {
     opts = {
       populations: [],
       maxDepth: 0,
@@ -329,7 +414,7 @@ export class DBDoc<T> implements DBDocType<T> {
       ...opts,
     }
     // Debugger variable
-    const tree_ = this.doc_.extend('tree')
+    const _ = this.doc_.extend('tree')
 
     const doc = this.clone()
 
@@ -342,12 +427,12 @@ export class DBDoc<T> implements DBDocType<T> {
 
     if (!opts) return doc
 
-    /* DEBUG */ tree_('Number of populations: %d', opts.populations?.length)
+    /* DEBUG */ _('Number of populations: %d', opts.populations?.length)
 
     // Map over populations array to run individual populations
     opts.populations?.map((q, i) => {
       if (this.collection.name === q.collection.name) {
-        /* DEBUG */ tree_('Running population number %d', i)
+        /* DEBUG */ _('Running population number %d', i)
 
         const children = q.collection.find({
           queries: [
@@ -366,7 +451,7 @@ export class DBDoc<T> implements DBDocType<T> {
         if (opts.maxDepth && <number>opts.currentDepth <= opts.maxDepth)
           doc.set(
             q.destinationField,
-            children.map((child: DBDoc<T>) =>
+            children.map((child) =>
               child.tree({
                 ...opts,
                 currentDepth: <number>opts.currentDepth + 1,
@@ -376,14 +461,14 @@ export class DBDoc<T> implements DBDocType<T> {
       }
     })
 
-    /* DEBUG */ this.doc_('Emitting event "EventDocumentTreeComplete"')
+    /* DEBUG */ _('Emitting event "EventDocumentTreeComplete"')
     this.emitEvent({
       event: 'EventDocumentTreeComplete',
       doc,
       opts,
     })
 
-    /* DEBUG */ tree_(
+    /* DEBUG */ _(
       'Finished running %d populations, returning result',
       opts.populations?.length
     )

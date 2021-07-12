@@ -294,7 +294,7 @@ export interface EventDocumentCustomPopulate {
    * The CustomPopulateQuery object about to be used. Modify this to
    * alter the outcome of the populate function
    */
-  opts: DBDocCustomPopulateOpts
+  opts: DBDocCustomPopulateOpts<any>
 }
 
 /**
@@ -312,7 +312,7 @@ export interface EventDocumentCustomPopulateComplete {
    * The CustomPopulateQuery object about to be used. Modify this to
    * alter the outcome of the populate function
    */
-  opts: DBDocCustomPopulateOpts
+  opts: DBDocCustomPopulateOpts<any>
 }
 
 /**
@@ -327,7 +327,7 @@ export interface EventDocumentTree {
    */
   doc: DBDocType<any>
 
-  opts: DBDocTreeOpts
+  opts: DBDocTreeOpts<any>
 }
 
 /**
@@ -342,7 +342,7 @@ export interface EventDocumentTreeComplete {
    */
   doc: DBDocType<any>
 
-  opts: DBDocTreeOpts
+  opts: DBDocTreeOpts<any>
 }
 
 /**
@@ -384,6 +384,11 @@ export interface EventCollectionDocumentUpdated {
    * A reference to the containing collection
    */
   collection: DBCollectionType<any>
+
+  /**
+   * Paths that was updated on document
+   */
+  paths: string[]
 }
 
 /**
