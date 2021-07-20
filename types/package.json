@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/types",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Types shared across MemsDB",
   "main": "index.d.ts",
   "types": "index.d.ts",
