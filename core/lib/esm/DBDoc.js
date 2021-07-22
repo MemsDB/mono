@@ -92,12 +92,36 @@ export class DBDoc {
         this.collection = collection;
         // Ensure the document has a valid and unique ID
         this.id = id;
-        const _ = this.doc_ = collection.col_.extend(`<doc>${this.id}`);
+        const _ = (this.doc_ = collection.col_.extend(`<doc>${this.id}`));
         this.isCloned = isCloned;
         // Ensure this.data is a replica of the schema before assigning the new data
         this.setData(merge(cloneDeep(this.collection.schema), cloneDeep(data)), true);
+        this.pluginData.set('internal:subscriptions', new Map());
         // Assign the data to the new document
         /* DEBUG */ _('Document %s constructed', this.id);
+    }
+    /**
+     * Listen to changes on a specific key
+     * @param key Key to listen to changes on
+     * @param func Function to run when changes occur
+     */
+    subscribe(key, func) {
+        const subscriptionMap = this.pluginData.get('internal:subscriptions');
+        const subscribedKey = subscriptionMap.get(key);
+        if (subscribedKey) {
+            subscribedKey.push(func);
+        }
+        else {
+            subscriptionMap.set(key, [func]);
+        }
+    }
+    /**
+     * Remove all subscribed functions for a specified key
+     * @param key Key to stop listening to
+     */
+    unsubscribe(key) {
+        const subscriptionMap = this.pluginData.get('internal:subscriptions');
+        subscriptionMap.delete(key);
     }
     /**
      * The data of the document as provided by the storage provider
@@ -131,7 +155,7 @@ export class DBDoc {
         setTimeout(() => {
             /* DEBUG */ _('Clearing dataCache');
             this.dataCache.delete('root');
-        }, 300);
+        }, 500);
         /* DEBUG */ _('Returning data');
         return { ...data, ...details };
     }
@@ -148,6 +172,9 @@ export class DBDoc {
         this.updatePathsCache.set(key, data);
         const _ = this.doc_.extend('data:set');
         const docData = this.data;
+        const subscriptionMap = this.pluginData.get('internal:subscriptions');
+        const keySubscriptions = subscriptionMap.get(key);
+        const rootSubscriptions = subscriptionMap.get('root');
         /* DEBUG */ _('Setting key `%s`');
         docData[key] = data;
         if (this.isCloned) {
@@ -159,7 +186,12 @@ export class DBDoc {
             this.collection.db.storageEngine.save(this, docData);
             /* DEBUG */ _('Finished saving document, Updating indexes');
             this.updateIndexes(key);
-            /* DEBUG */ _('Finished updating indexes');
+            /* DEBUG */ _('Finished updating indexes. Applying key and data to  key and root subscriptions');
+            if (keySubscriptions)
+                keySubscriptions.forEach(func => func(key, data));
+            if (rootSubscriptions)
+                rootSubscriptions.forEach(func => func(key, data));
+            /* DEBUG */ _('Finished running subscriptions');
         }
         this.dataCache.delete('root');
     }
@@ -184,6 +216,10 @@ export class DBDoc {
                 /* DEBUG */ _('Finished saving document, Updating indexes');
                 this.updateIndexes('root');
                 /* DEBUG */ _('Finished updating indexes');
+                const subscriptionMap = this.pluginData.get('internal:subscriptions');
+                const keySubscriptions = subscriptionMap.get('root');
+                if (keySubscriptions)
+                    keySubscriptions.forEach(func => func('root', data));
             }
         }
         this.dataCache.delete('root');
@@ -339,7 +375,7 @@ export class DBDoc {
                     ],
                 });
                 if (opts.maxDepth && opts.currentDepth <= opts.maxDepth)
-                    doc.set(q.destinationField, children.map((child) => child.tree({
+                    doc.set(q.destinationField, children.map(child => child.tree({
                         ...opts,
                         currentDepth: opts.currentDepth + 1,
                     })));

@@ -11,7 +11,7 @@ import type {
   DBCollection as DBCollectionType,
   DBDocCustomPopulateOpts,
   DBDocTreeOpts,
-  MemsDBEvent
+  MemsDBEvent,
 } from '@memsdb/types'
 
 /**
@@ -56,15 +56,53 @@ export class DBDoc<T> implements DBDocType<T> {
     // Ensure the document has a valid and unique ID
     this.id = id
 
-    const _ = this.doc_ = collection.col_.extend(`<doc>${this.id}`)
+    const _ = (this.doc_ = collection.col_.extend(`<doc>${this.id}`))
 
     this.isCloned = isCloned
 
     // Ensure this.data is a replica of the schema before assigning the new data
-    this.setData(merge(cloneDeep(this.collection.schema), cloneDeep(data)), true)
+    this.setData(
+      merge(cloneDeep(this.collection.schema), cloneDeep(data)),
+      true
+    )
+
+    this.pluginData.set('internal:subscriptions', new Map())
 
     // Assign the data to the new document
     /* DEBUG */ _('Document %s constructed', this.id)
+  }
+
+  /**
+   * Listen to changes on a specific key
+   * @param key Key to listen to changes on
+   * @param func Function to run when changes occur
+   */
+  subscribe(
+    key: 'root' | keyof T | string,
+    func: (key: string, data: any) => void
+  ) {
+    const subscriptionMap = this.pluginData.get(
+      'internal:subscriptions'
+    ) as Map<string, ((key: string, data: any) => void)[]>
+
+    const subscribedKey = subscriptionMap.get(key as string)
+    if (subscribedKey) {
+      subscribedKey.push(func)
+    } else {
+      subscriptionMap.set(key as string, [func])
+    }
+  }
+  
+  /**
+   * Remove all subscribed functions for a specified key
+   * @param key Key to stop listening to
+   */
+  unsubscribe(key: 'root' | keyof T | string) {
+    const subscriptionMap = this.pluginData.get(
+      'internal:subscriptions'
+    ) as Map<string, ((key: string, data: any) => void)[]>
+
+    subscriptionMap.delete(key as string)
   }
 
   private updatePathsCache: Map<string, any> = new Map()
@@ -72,10 +110,7 @@ export class DBDoc<T> implements DBDocType<T> {
   private updateIndexes = debounce((path: string) => {
     const _ = this.doc_.extend(`updateIndexes`)
 
-    /* DEBUG */ _(
-      'Document was modified at path %s',
-      path
-    )
+    /* DEBUG */ _('Document was modified at path %s', path)
     this._updatedAt = Date.now()
     if (this.indexed.size > 0) {
       /* DEBUG */ _('Indexes in collection, updating each collection index')
@@ -92,12 +127,13 @@ export class DBDoc<T> implements DBDocType<T> {
         updateReactiveIndex(this.collection, key)
         /* DEBUG */ _('Updated collection reactive index for key %j', key)
       }
-      /* DEBUG */ _('Finished updating %d reactive indexes', this.collection.reactiveIndexed.size)
+      /* DEBUG */ _(
+        'Finished updating %d reactive indexes',
+        this.collection.reactiveIndexed.size
+      )
     }
-    
-    /* DEBUG */ _(
-      'Emitting event "EventCollectionDocumentUpdated"'
-    )
+
+    /* DEBUG */ _('Emitting event "EventCollectionDocumentUpdated"')
 
     this.collection.emitEvent({
       event: 'EventCollectionDocumentUpdated',
@@ -147,7 +183,7 @@ export class DBDoc<T> implements DBDocType<T> {
     setTimeout(() => {
       /* DEBUG */ _('Clearing dataCache')
       this.dataCache.delete('root')
-    }, 300)
+    }, 500)
 
     /* DEBUG */ _('Returning data')
 
@@ -168,19 +204,31 @@ export class DBDoc<T> implements DBDocType<T> {
 
     const _ = this.doc_.extend('data:set')
     const docData = this.data
+    const subscriptionMap = this.pluginData.get(
+      'internal:subscriptions'
+    ) as Map<string, ((key: string, data: any) => void)[]>
+    const keySubscriptions = subscriptionMap.get(key)
+    const rootSubscriptions = subscriptionMap.get('root')
 
-    /* DEBUG */_('Setting key `%s`')
+    /* DEBUG */ _('Setting key `%s`')
     docData[key] = data
 
     if (this.isCloned) {
-      /* DEBUG */_('Document is a clone, not saving or updating document or indexes')
+      /* DEBUG */ _(
+        'Document is a clone, not saving or updating document or indexes'
+      )
       this.pluginData.set('internal:cloned', docData)
     } else {
-      /* DEBUG */_('Saving document')
+      /* DEBUG */ _('Saving document')
       this.collection.db.storageEngine.save(this, docData)
-      /* DEBUG */_('Finished saving document, Updating indexes')
+      /* DEBUG */ _('Finished saving document, Updating indexes')
       this.updateIndexes(key)
-      /* DEBUG */_('Finished updating indexes')
+      /* DEBUG */ _(
+        'Finished updating indexes. Applying key and data to  key and root subscriptions'
+      )
+      if (keySubscriptions) keySubscriptions.forEach(func => func(key, data))
+      if (rootSubscriptions) rootSubscriptions.forEach(func => func(key, data))
+      /* DEBUG */ _('Finished running subscriptions')
     }
 
     this.dataCache.delete('root')
@@ -197,16 +245,24 @@ export class DBDoc<T> implements DBDocType<T> {
     this.updatePathsCache.set('root', data)
 
     if (this.isCloned) {
-      /* DEBUG */ _('Document is a clone, setting internal data instead of to storage engine')
+      /* DEBUG */ _(
+        'Document is a clone, setting internal data instead of to storage engine'
+      )
       this.pluginData.set('internal:cloned', data)
       /* DEBUG */ _('Finished setting document plugin data')
     } else {
-      /* DEBUG */_('Saving document')
+      /* DEBUG */ _('Saving document')
       this.collection.db.storageEngine.save(this, data)
       if (!initial) {
-        /* DEBUG */_('Finished saving document, Updating indexes')
+        /* DEBUG */ _('Finished saving document, Updating indexes')
         this.updateIndexes('root')
-        /* DEBUG */_('Finished updating indexes')
+        /* DEBUG */ _('Finished updating indexes')
+        const subscriptionMap = this.pluginData.get(
+          'internal:subscriptions'
+        ) as Map<string, ((key: string, data: any) => void)[]>
+        const keySubscriptions = subscriptionMap.get('root')
+        if (keySubscriptions)
+          keySubscriptions.forEach(func => func('root', data))
       }
     }
 
@@ -292,10 +348,12 @@ export class DBDoc<T> implements DBDocType<T> {
         success: true,
       })
     } catch (err) {
-      /* DEBUG */ _('Failed to delete this document `%s`, %J', (<Error>err).message,  err)
       /* DEBUG */ _(
-        'Emitting event "EventDocumentDeleteComplete" with error'
+        'Failed to delete this document `%s`, %J',
+        (<Error>err).message,
+        err
       )
+      /* DEBUG */ _('Emitting event "EventDocumentDeleteComplete" with error')
       this.emitEvent({
         event: 'EventDocumentDeleteComplete',
         id: this.id,
@@ -314,7 +372,12 @@ export class DBDoc<T> implements DBDocType<T> {
   populate(populateQuery: string, filter = false): DBDoc<T> {
     const _ = this.doc_.extend('populate')
     /* DEBUG */ _('Running populate on document')
-    const [populated] = populate<T>(this.collection, [this], populateQuery, filter)
+    const [populated] = populate<T>(
+      this.collection,
+      [this],
+      populateQuery,
+      filter
+    )
     /* DEBUG */ _('Finished populating document')
 
     return populated as DBDoc<T>
@@ -334,9 +397,7 @@ export class DBDoc<T> implements DBDocType<T> {
     const _ = this.doc_.extend('customPopulate')
 
     // Construct a new document based on the original so as to not perform a mutation
-    /* DEBUG */ _(
-      'Creating identical document so as to avoid mutations'
-    )
+    /* DEBUG */ _('Creating identical document so as to avoid mutations')
     const resultDoc = this.clone()
 
     /* DEBUG */ this.doc_('Emitting event "EventDocumentCustomPopulate"')
@@ -451,7 +512,7 @@ export class DBDoc<T> implements DBDocType<T> {
         if (opts.maxDepth && <number>opts.currentDepth <= opts.maxDepth)
           doc.set(
             q.destinationField,
-            children.map((child) =>
+            children.map(child =>
               child.tree({
                 ...opts,
                 currentDepth: <number>opts.currentDepth + 1,

@@ -279,6 +279,19 @@ export declare class DBDoc<T> {
   )
 
   /**
+   * Listen to changes on a specific key
+   * @param key Key to listen to changes on
+   * @param func Function to run when changes occur
+   */
+  subscribe(key: 'root' | keyof T | string, func: (key: string, data: any) => void): void
+  
+  /**
+   * Remove all subscribed functions for a specified key
+   * @param key Key to stop listening to
+   */
+  unsubscribe(key: 'root' | keyof T | string): void
+
+  /**
    * The data of the document as provided by the storage provider
    */
   get data(): DBDoc<T>['collection']['schema']

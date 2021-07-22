@@ -27,6 +27,17 @@ export declare class DBDoc<T> implements DBDocType<T> {
     constructor(data: {
         [key: string]: any;
     }, collection: DBCollectionType<T>, id?: string, isCloned?: boolean);
+    /**
+     * Listen to changes on a specific key
+     * @param key Key to listen to changes on
+     * @param func Function to run when changes occur
+     */
+    subscribe(key: 'root' | keyof T | string, func: (key: string, data: any) => void): void;
+    /**
+     * Remove all subscribed functions for a specified key
+     * @param key Key to stop listening to
+     */
+    unsubscribe(key: 'root' | keyof T | string): void;
     private updatePathsCache;
     private updateIndexes;
     /**

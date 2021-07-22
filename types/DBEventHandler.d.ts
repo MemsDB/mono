@@ -388,7 +388,7 @@ export interface EventCollectionDocumentUpdated {
   /**
    * Paths that was updated on document
    */
-  paths: string[]
+  paths: Map<string, any>
 }
 
 /**

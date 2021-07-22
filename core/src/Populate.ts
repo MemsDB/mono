@@ -90,6 +90,8 @@ const tokenify = (strArr: string[] = [], tokenArr: string[] = []): string[] => {
     }
   }
 
+  if (token !== '') pushAndReset()
+
   return tokenArr
 }
 
@@ -435,10 +437,6 @@ export const populate = <T>(
               // Find the document
               const localComparison = query.remoteLocalComparisonKey ? getKeyValue(doc, query.remoteLocalComparisonKey) : nestedKeyVal
               const childDoc = query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison)
-
-              if (query.remoteExternalKey) {
-                console.log(QueryBuilder.where(query.remoteExternalKey, '===', localComparison))
-              }
 
               // If the child document exists, run a population on it
               if (childDoc && (!Array.isArray(childDoc) || childDoc.length > 0)) {

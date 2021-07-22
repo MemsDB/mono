@@ -68,6 +68,8 @@ const tokenify = (strArr = [], tokenArr = []) => {
                 continue;
         }
     }
+    if (token !== '')
+        pushAndReset();
     return tokenArr;
 };
 /**
@@ -330,9 +332,6 @@ export const populate = (rootCollection, docs, populateQuery, filter = false) =>
                             // Find the document
                             const localComparison = query.remoteLocalComparisonKey ? getKeyValue(doc, query.remoteLocalComparisonKey) : nestedKeyVal;
                             const childDoc = query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison);
-                            if (query.remoteExternalKey) {
-                                console.log(QueryBuilder.where(query.remoteExternalKey, '===', localComparison));
-                            }
                             // If the child document exists, run a population on it
                             if (childDoc && (!Array.isArray(childDoc) || childDoc.length > 0)) {
                                 // Run runPopulate on it with the child queries
