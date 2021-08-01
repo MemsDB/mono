@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/plugin-http",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MemsDB HTTP adaptor for writes/reads over the network",
   "files": [
     "lib"
@@ -8,7 +8,6 @@
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
   "types": "./lib/types/index.d.ts",
-  "private": false,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "run-p build:es build:cjs build:types",
