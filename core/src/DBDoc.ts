@@ -24,8 +24,8 @@ export class DBDoc<T> implements DBDocType<T> {
 
   isCloned: boolean = false
 
-  _createdAt: number = Date.now()
-  _updatedAt: number = Date.now()
+  _createdAt: number
+  _updatedAt: number
 
   /** Debugger variable */
   readonly doc_: debug.Debugger
@@ -49,7 +49,9 @@ export class DBDoc<T> implements DBDocType<T> {
     data: { [key: string]: any },
     collection: DBCollectionType<T>,
     id = v4(),
-    isCloned = false
+    isCloned = false,
+    _createdAt: number = Date.now(),
+    _updatedAt: number = Date.now()
   ) {
     this.collection = collection
 
@@ -67,6 +69,8 @@ export class DBDoc<T> implements DBDocType<T> {
     )
 
     this.pluginData.set('internal:subscriptions', new Map())
+    this._createdAt = _createdAt
+    this._updatedAt = _updatedAt
 
     // Assign the data to the new document
     /* DEBUG */ _('Document %s constructed', this.id)

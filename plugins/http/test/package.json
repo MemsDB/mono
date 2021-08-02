@@ -1,0 +1,25 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "DEBUG='memsdb:<db>test-http:<plugin>*' esno index.js",
+    "start:dev:memsdblog": "DEBUG='memsdb:*' esno index.js",
+    "start:dev:nolog": "DEBUG=true esno index.js",
+    "start:dev:populatelog": "DEBUG='memsdb:<db>test-http:<col>users:populate:ParseMemsPL' esno index.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@memsdb/core": "^0.1.1",
+    "memsdb-plugin-http": "../"
+  },
+  "devDependencies": {
+    "esno": "^0.7.3",
+    "ts-node": "^10.0.0"
+  }
+}

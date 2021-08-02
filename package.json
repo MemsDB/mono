@@ -24,7 +24,7 @@
     "build:storage:localstorage": "npm build",
     "build:storage:sessionstorage": "npm build",
     "build:storage:memory": "npm build",
-    "build:core": "npm build"
+    "build:core": "yarn workspace @memsdb/core build"
   },
   "workspaces": [ "./backup/*", "./storage/*", "./core" ]
 }

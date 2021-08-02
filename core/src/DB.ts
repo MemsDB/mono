@@ -325,10 +325,12 @@ export class DB implements DBType {
       const keys = Object.keys(collection.schema)
       const values = collection.docs.map(doc => [
         doc.id,
+        doc._createdAt,
+        doc._updatedAt,
         ...keys.map(key => doc.data[key]),
       ])
 
-      keys.unshift('id')
+      keys.unshift('id', '_createdAt', '_updatedAt')
 
       backup[key] = {
         keys,
@@ -394,15 +396,18 @@ export class DB implements DBType {
         const doc: { [key: string]: any } = {}
 
         data.keys.forEach((key, i) => {
-          // Skip the ID
-          if (i === 0) return
+          // Skip the ID, _createdAt, and _updatedAt
+          if (i < 3) return
           doc[key] = docData[i]
         })
 
-        col.insertOne({
+        const newDoc = col.insert({
           doc,
           id: docData[0],
         })
+
+        newDoc._createdAt = docData[1]
+        newDoc._createdAt = docData[2]
       })
     })
 

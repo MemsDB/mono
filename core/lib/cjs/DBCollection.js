@@ -81,8 +81,8 @@ class DBCollection {
      * Insert a new document into the array. Defaults will be loaded from the schema
      * @param opts Insert document options
      */
-    insertOne(opts) {
-        const _ = this.col_.extend('insertOne');
+    insert(opts) {
+        const _ = this.col_.extend('insert');
         opts = {
             reactiveUpdate: true,
             ...opts,
@@ -102,7 +102,7 @@ class DBCollection {
             }
             /* DEBUG */ _("Document with ID %s doesn't exist, continuing with document creation", opts.id);
         }
-        const newDoc = new DBDoc_1.DBDoc(opts.doc, this, opts.id);
+        const newDoc = new DBDoc_1.DBDoc(opts.doc, this, opts.id, false, opts._createdAt, opts._updatedAt);
         /* DEBUG */ _('Created document with id: %s, pushing to collection', newDoc.id);
         this.docs.push(newDoc);
         this.idMap.set(newDoc.id, newDoc);
@@ -121,22 +121,13 @@ class DBCollection {
         return newDoc;
     }
     /**
-     * Alias of insertOne
-     * @param opts Insert document options
-     */
-    insert(opts) {
-        const _ = this.col_.extend('insert');
-        /* DEBUG */ _('Inserting one decoument');
-        return this.insertOne(opts);
-    }
-    /**
      * Add any amount of new documents to the collection
      * @param docs New documents to be added
      */
     insertMany(opts) {
         const _ = this.col_.extend('insertMany');
         /* DEBUG */ _('Creating %d new documents', opts.doc.length);
-        opts.doc.map((doc, i, arr) => this.insertOne({
+        opts.doc.map((doc, i, arr) => this.insert({
             doc,
             reactiveUpdate: i === arr.length - 1 && opts.reactiveUpdate === true,
         }));

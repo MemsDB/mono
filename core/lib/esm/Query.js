@@ -49,7 +49,7 @@ const compare = (doc, query, queryPlugins) => {
             break;
         case 'includes':
             // Filter out documents that don't include the comparison
-            if (Array.isArray(val))
+            if (Array.isArray(val) || typeof val === 'string')
                 res = val.includes(comp);
             else
                 return false;

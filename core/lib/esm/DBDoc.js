@@ -15,10 +15,8 @@ export class DBDoc {
      * @param data Data to be assigned to the document schema
      * @param collection Reference to the parent collection
      */
-    constructor(data, collection, id = v4(), isCloned = false) {
+    constructor(data, collection, id = v4(), isCloned = false, _createdAt = Date.now(), _updatedAt = Date.now()) {
         this.isCloned = false;
-        this._createdAt = Date.now();
-        this._updatedAt = Date.now();
         /** Reference to indexed data for repeated deep data matching */
         this.indexed = new Map();
         /** Object for any plugin related data */
@@ -97,6 +95,8 @@ export class DBDoc {
         // Ensure this.data is a replica of the schema before assigning the new data
         this.setData(merge(cloneDeep(this.collection.schema), cloneDeep(data)), true);
         this.pluginData.set('internal:subscriptions', new Map());
+        this._createdAt = _createdAt;
+        this._updatedAt = _updatedAt;
         // Assign the data to the new document
         /* DEBUG */ _('Document %s constructed', this.id);
     }

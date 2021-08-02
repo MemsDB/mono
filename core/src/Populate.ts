@@ -376,7 +376,11 @@ export const populate = <T>(
     const duped = docsOrig.map(doc => doc.clone())
     /* DEBUG */ runPop_('Documents duped')
 
-    const keysList = queries.map(query => query.key)
+    const keysList: string[] = []
+    queries.forEach(query => {
+      keysList.push(query.key)
+      if (query.remoteLocalComparisonKey !== undefined) keysList.push(query.remoteLocalComparisonKey)
+    })
 
     runPop_('List of keys to keep on document: %O', keysList)
 
@@ -436,7 +440,11 @@ export const populate = <T>(
               /* DEBUG */ runPop_("Query isn't on an array")
               // Find the document
               const localComparison = query.remoteLocalComparisonKey ? getKeyValue(doc, query.remoteLocalComparisonKey) : nestedKeyVal
-              const childDoc = query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison)
+              let childDoc = query.remoteExternalKey ? query.ref?.find(QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison)
+
+              if (!query.isArr && Array.isArray(childDoc)) {
+                childDoc = childDoc[0]
+              }
 
               // If the child document exists, run a population on it
               if (childDoc && (!Array.isArray(childDoc) || childDoc.length > 0)) {

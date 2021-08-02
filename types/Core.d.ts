@@ -133,6 +133,8 @@ export interface DBCollectionInsertOpts <T>{
   doc: T
   id?: string
   reactiveUpdate?: boolean
+  _createdAt?: number
+  _updatedAt?: number
 }
 
 export interface DBCollectionInsertManyOpts <T>{
@@ -191,12 +193,6 @@ export declare class DBCollection<T extends { [key: string]: any }> {
 
   /**
    * Insert a new document into the array. Defaults will be loaded from the schema
-   * @param opts Insert document options
-   */
-  insertOne(opts: DBCollectionInsertOpts<T>): DBDoc<T>
-
-  /**
-   * Alias of insertOne
    * @param opts Insert document options
    */
   insert(opts: DBCollectionInsertOpts<T>): DBDoc<T>

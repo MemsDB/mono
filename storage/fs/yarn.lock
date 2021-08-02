@@ -2,15 +2,20 @@
 # yarn lockfile v1
 
 
-"@memsdb/types@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-0.3.0.tgz#cd34e946eda40b98836fe37af68c2727d8ed198d"
-  integrity sha512-TAJ8B0ZV5ZFQ/ueL6ZE7kMwHwWfjnIK1nPGWcaG7pUeRuF1ydss2ZSV8j0pIMP3TjRv0LdKsdJdeU6yeRyoYWw==
+"@memsdb/types@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-2.2.0.tgz#055fc92e76f2218070ac9b87a695bd294602f1c6"
+  integrity sha512-+JYuTB40KGCrsKBMBV+JxUhJDJixHh6cYkYSDW0EuDZ6WXC6zT9uWs5Zc5JMNlJglQSsgz2MhAQfCxPpxLvSRw==
 
 "@types/node@^16.0.0":
   version "16.3.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.3.0.tgz#1836664e4fad13b51b07eb6e882a53925e6543c4"
   integrity sha512-OydMCocGMGqw/1BnWbhtK+AtwyWTOigtrQlRe57OQmTNcI3HKlVI5FGlh+c4mSqInMPLynFrTlYjfajPu9O/eQ==
+
+"@types/uuid@^8.3.1":
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.1.tgz#1a32969cf8f0364b3d8c8af9cc3555b7805df14f"
+  integrity sha512-Y2mHTRAbqfFkpjldbkHGY8JIzRN6XqYRliG8/24FcHm2D2PwW24fl5xMRTVGdrb7iMrwCaIEbLWerGIkXuFWVg==
 
 ansi-styles@^3.2.1:
   version "3.2.1"
@@ -470,6 +475,11 @@ unbox-primitive@^1.0.1:
     has-bigints "^1.0.1"
     has-symbols "^1.0.2"
     which-boxed-primitive "^1.0.2"
+
+uuid@^8.3.2:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"

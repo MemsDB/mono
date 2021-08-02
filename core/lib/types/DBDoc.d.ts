@@ -26,7 +26,7 @@ export declare class DBDoc<T> implements DBDocType<T> {
      */
     constructor(data: {
         [key: string]: any;
-    }, collection: DBCollectionType<T>, id?: string, isCloned?: boolean);
+    }, collection: DBCollectionType<T>, id?: string, isCloned?: boolean, _createdAt?: number, _updatedAt?: number);
     /**
      * Listen to changes on a specific key
      * @param key Key to listen to changes on

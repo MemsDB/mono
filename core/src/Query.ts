@@ -70,7 +70,7 @@ const compare = (doc: DBDocType<any>, query: QueryType, queryPlugins: Map<string
       break
     case 'includes':
       // Filter out documents that don't include the comparison
-      if (Array.isArray(val)) res = val.includes(comp)
+      if (Array.isArray(val) || typeof val === 'string') res = val.includes(comp)
       else return false
 
       break

@@ -49,11 +49,6 @@ export declare class DBCollection<T extends {
      * Insert a new document into the array. Defaults will be loaded from the schema
      * @param opts Insert document options
      */
-    insertOne(opts: DBCollectionInsertOpts<T>): DBDocType<T>;
-    /**
-     * Alias of insertOne
-     * @param opts Insert document options
-     */
     insert(opts: DBCollectionInsertOpts<T>): DBDocType<T>;
     /**
      * Add any amount of new documents to the collection

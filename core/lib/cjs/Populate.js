@@ -286,7 +286,12 @@ const populate = (rootCollection, docs, populateQuery, filter = false) => {
         // Duplicate all the original documents so as to avoid mutating the originals with references to the copies
         const duped = docsOrig.map(doc => doc.clone());
         /* DEBUG */ runPop_('Documents duped');
-        const keysList = queries.map(query => query.key);
+        const keysList = [];
+        queries.forEach(query => {
+            keysList.push(query.key);
+            if (query.remoteLocalComparisonKey !== undefined)
+                keysList.push(query.remoteLocalComparisonKey);
+        });
         runPop_('List of keys to keep on document: %O', keysList);
         const mapArray = (arr, query) => arr.map((str) => query.remoteExternalKey ? query.ref?.find(Query_1.QueryBuilder.where(query.remoteExternalKey, '===', str)) : query.ref?.id(str));
         const remoteLocalValOrID = (keyVal, query) => query.remoteExternalKey ? query.ref.find(Query_1.QueryBuilder.where(query.remoteExternalKey, '===', keyVal)) : [query.ref?.id(keyVal)];
@@ -334,7 +339,10 @@ const populate = (rootCollection, docs, populateQuery, filter = false) => {
                             /* DEBUG */ runPop_("Query isn't on an array");
                             // Find the document
                             const localComparison = query.remoteLocalComparisonKey ? getKeyValue(doc, query.remoteLocalComparisonKey) : nestedKeyVal;
-                            const childDoc = query.remoteExternalKey ? query.ref?.find(Query_1.QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison);
+                            let childDoc = query.remoteExternalKey ? query.ref?.find(Query_1.QueryBuilder.where(query.remoteExternalKey, '===', localComparison)) : query.ref?.id(localComparison);
+                            if (!query.isArr && Array.isArray(childDoc)) {
+                                childDoc = childDoc[0];
+                            }
                             // If the child document exists, run a population on it
                             if (childDoc && (!Array.isArray(childDoc) || childDoc.length > 0)) {
                                 // Run runPopulate on it with the child queries

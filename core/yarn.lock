@@ -12,10 +12,10 @@
   resolved "https://registry.yarnpkg.com/@memsdb/storage-memory/-/storage-memory-1.0.1.tgz#d1b6b6c1260ceb18ac03bc060f341de1d342a768"
   integrity sha512-pNSrRQ0XafWVuCjaLtOridMY1LBPBS54k4VtJzPp+xaY/rNrcrfzdDPdm6cmeauoshw+pH3z1N70+oR43r+KDw==
 
-"@memsdb/types@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-2.2.0.tgz#055fc92e76f2218070ac9b87a695bd294602f1c6"
-  integrity sha512-+JYuTB40KGCrsKBMBV+JxUhJDJixHh6cYkYSDW0EuDZ6WXC6zT9uWs5Zc5JMNlJglQSsgz2MhAQfCxPpxLvSRw==
+"@memsdb/types@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@memsdb/types/-/types-3.0.0.tgz#b6315b4bb14400d60d54fb1f4973cc8b618ef7de"
+  integrity sha512-l+HiT0tjUIlBDtmwXQ7EnK7Xts0r17XOrR0iUSNtxq8vi4uwmw39kLOKq5pZgeB7QqGkAqAh4IRtedOnBW0l5w==
 
 "@types/debug@^4.1.6":
   version "4.1.6"

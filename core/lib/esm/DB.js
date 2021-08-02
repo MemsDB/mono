@@ -229,9 +229,11 @@ export class DB {
             const keys = Object.keys(collection.schema);
             const values = collection.docs.map(doc => [
                 doc.id,
+                doc._createdAt,
+                doc._updatedAt,
                 ...keys.map(key => doc.data[key]),
             ]);
-            keys.unshift('id');
+            keys.unshift('id', '_createdAt', '_updatedAt');
             backup[key] = {
                 keys,
                 values,
@@ -278,15 +280,17 @@ export class DB {
             data.values.forEach(docData => {
                 const doc = {};
                 data.keys.forEach((key, i) => {
-                    // Skip the ID
-                    if (i === 0)
+                    // Skip the ID, _createdAt, and _updatedAt
+                    if (i < 3)
                         return;
                     doc[key] = docData[i];
                 });
-                col.insertOne({
+                const newDoc = col.insert({
                     doc,
                     id: docData[0],
                 });
+                newDoc._createdAt = docData[1];
+                newDoc._createdAt = docData[2];
             });
         });
         /* DEBUG */ _('Emitting event "EventDBRestoreComplete"');
