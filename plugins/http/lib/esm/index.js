@@ -43,6 +43,7 @@ export class MemsDBServer {
             timestamp: true,
         }));
         this.app.use(json());
+        // Create internal collections for things like Auth and tokens
         /* DEBUG */ _('Creating internal auth collection');
         const authCollection = new DBCollection(db, {
             name: '<plugin:http>auth',
@@ -67,6 +68,7 @@ export class MemsDBServer {
         });
         /* DEBUG */ _('Finding root user account');
         const [rootUser] = authCollection.find(QueryBuilder.where('username', '===', 'root'));
+        // If no root user was found, create one
         if (!rootUser) {
             /* DEBUG */ _('root user not found, creating new user');
             /* DEBUG */ _('Generating salt for root user');
@@ -83,7 +85,9 @@ export class MemsDBServer {
                 },
             });
         }
+        // Register internal authentication routes
         this.registerAuthRoutes();
+        // Register collections for handling collection additions
         /* DEBUG */ _('Looping over DB collections to register paths');
         db.collections.forEach(collection => {
             this.registerCollection(collection);
@@ -108,13 +112,14 @@ export class MemsDBServer {
             return;
         }
         /* DEBUG */ this._('Registering collection paths for "%s"', collection.name);
+        // Register findByID route
         this.app.get(`/collection/${collection.name}/findByID/:id`, (req, res) => {
             const _ = _reg.extend('<path>/findByID/:id');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
@@ -155,13 +160,14 @@ export class MemsDBServer {
             return this.json(res, responseObj);
         });
         /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/findByID/:id`);
+        // Register find route
         this.app.get(`/collection/${collection.name}/find`, (req, res) => {
             const _ = _reg.extend('<path>/find');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
@@ -190,13 +196,14 @@ export class MemsDBServer {
             return this.json(res, responseObj);
         });
         /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/find`);
+        // Register insert route
         this.app.put(`/collection/${collection.name}/insert`, (req, res) => {
             const _ = _reg.extend('<path>/insert');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
@@ -228,13 +235,14 @@ export class MemsDBServer {
             return this.json(res, responseObj);
         });
         /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/insert`);
+        // Regiter set route for changing documents
         this.app.patch(`/collection/${collection.name}/set/:id`, (req, res) => {
             const _ = _reg.extend('<path>/set/:id');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
@@ -296,13 +304,85 @@ export class MemsDBServer {
             return this.json(res, responseObj);
         });
         /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/set/:id`);
+        // Regiter set route for changing multiple fields in a document
         this.app.patch(`/collection/${collection.name}/setData/:id`, (req, res) => {
+            const _ = _reg.extend('<path>/set/:id');
+            const start = Date.now();
+            /* DEBUG */ _('Parsing auth token');
+            this.parseAuthToken(req);
+            /* DEBUG */ _('Finished parsing auth token');
+            if (this.requireAuth && !this.testACL(req, '')) {
+                /* DEBUG */ _('Failed auth check. Auth required for all routes');
+                return this.json(res, {
+                    errors: 'You must be logged in for this',
+                }, 403);
+            }
+            const docData = req.body;
+            const { id = '' } = req.params;
+            const errors = [];
+            if (!id || id === '') {
+                /* DEBUG */ _('No ID passed in parameters, returning error');
+                return this.json(res, {
+                    error: 'ID not specified',
+                }, 400);
+            }
+            if (!docData) {
+                /* DEBUG */ _('No doc provided in body, returning error');
+                return this.json(res, { error: 'No valid document body provided' }, 400);
+            }
+            /* DEBUG */ _('Finding document in collection');
+            const doc = collection.id(id);
+            /**
+             * If there's no document, return an error for the request
+             */
+            if (!doc) {
+                /* DEBUG */ _('Document not found for ID "%s", returning errors array', id);
+                errors.push('Document not found for that ID');
+                return this.json(res, {
+                    errors,
+                });
+            }
+            const dataKeys = Object.keys(docData);
+            /**
+             * Set the document keys to the specified data from the body of the request
+             */
+            /* DEBUG */ _('Setting document data');
+            dataKeys.forEach(key => doc.set(key, docData[key]));
+            /* DEBUG */ _('Finished setting %d keys', dataKeys.length);
+            /**
+             * Populate the document so as to remove keys, user must pass in a
+             * populate query to see the results of the .set() operation
+             */
+            /* DEBUG */ _('Populating document with MemsPL query');
+            const { slice: [populated], populateFilterUnspecified, populateQuery, errors: populateErrors, } = this.memsdbPopulate(_, req, collection, [doc]);
+            /* DEBUG */ _('Finished populating documents');
+            /**
+             * Construct the response object to contain the population details as
+             * any errors that occurred
+             */
+            const responseObj = {
+                doc: populated,
+                errors: [...populateErrors],
+                populateFilterUnspecified,
+                populateQuery,
+            };
+            /**
+             * Add totalTime parameter if this is debug
+             */
+            if (process.env.DEBUG) {
+                responseObj.totalTime = Date.now() - start;
+            }
+            return this.json(res, responseObj);
+        });
+        /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/set/:id`);
+        // Register setData route for changing the entire documents data field
+        this.app.patch(`/collection/${collection.name}/setRoot/:id`, (req, res) => {
             const _ = _reg.extend('<path>/setData/:id');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
@@ -364,13 +444,14 @@ export class MemsDBServer {
             return this.json(res, responseObj);
         });
         /* DEBUG */ _reg('Registered path "%s"', `/collection/${collection.name}/setData/:id`);
+        // Register document delete route
         this.app.delete(`/collection/${collection.name}/delete/:id`, (req, res) => {
             const _ = _reg.extend('<path>/delete/:id');
             const start = Date.now();
             /* DEBUG */ _('Parsing auth token');
             this.parseAuthToken(req);
             /* DEBUG */ _('Finished parsing auth token');
-            if (!this.testACL(req, '')) {
+            if (this.requireAuth && !this.testACL(req, '')) {
                 /* DEBUG */ _('Failed auth check. Auth required for all routes');
                 return this.json(res, {
                     errors: 'You must be logged in for this',
