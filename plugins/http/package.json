@@ -1,6 +1,6 @@
 {
   "name": "@memsdb/plugin-http",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "MemsDB HTTP adaptor for writes/reads over the network",
   "files": [
     "lib"
