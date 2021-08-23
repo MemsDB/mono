@@ -78,8 +78,6 @@ export class MemsDBServer {
       port?: number
       /** JWT signing secret */
       secret?: Secret
-      /** Password for the root user */
-      rootPassword?: string
       /** How long a JWT token should stay active for (in seconds) */
       tokenExpiry?: number
       /** Require Auth */
@@ -89,7 +87,6 @@ export class MemsDBServer {
     const {
       port = 16055,
       secret = v4(),
-      rootPassword = v4(),
       tokenExpiry = 86400,
       requireAuth = 'all',
     } = opts
@@ -122,7 +119,7 @@ export class MemsDBServer {
 
     // Create internal collections for things like Auth and tokens
     /* DEBUG */ _('Creating internal auth collection')
-    const authCollection = new DBCollection(db, {
+    new DBCollection(db, {
       name: '<plugin:http>auth',
       structure: {
         acl: [],
@@ -145,32 +142,6 @@ export class MemsDBServer {
       } as Token,
     })
 
-    /* DEBUG */ _('Finding root user account')
-    const [rootUser] = authCollection.find(
-      QueryBuilder.where('username', '===', 'root')
-    )
-    // If no root user was found, create one
-    if (!rootUser) {
-      /* DEBUG */ _('root user not found, creating new user')
-
-      /* DEBUG */ _('Generating salt for root user')
-      const salt = randomBytes(256).toString('base64')
-
-      /* DEBUG */ _(
-        'Inserting user "root". Note down the password: %s',
-        rootPassword
-      )
-      authCollection.insert({
-        doc: {
-          username: 'root',
-          salt,
-          hash: MemsDBServer.saltHashString(rootPassword, salt),
-          acl: ['*/*'],
-          allowedTokens: 0,
-          type: 'password',
-        } as Auth,
-      })
-    }
 
     // Register internal authentication routes
     this.registerAuthRoutes()
@@ -212,7 +183,7 @@ export class MemsDBServer {
       return
     }
     /* DEBUG */ this._('Registering collection paths for "%s"', collection.name)
-    
+
     // Register findByID route
     this.app.get(
       `/collection/${collection.name}/findByID/:id`,
@@ -363,7 +334,7 @@ export class MemsDBServer {
           limit,
           populateQuery,
           populateFilterUnspecified,
-          total: populateSlice.length,
+          total: findTotal,
           query: findQueries,
           errors: [],
         }
@@ -405,11 +376,12 @@ export class MemsDBServer {
         )
       }
 
-      const { reactiveUpdate: reactiveUpdateString = 'true', id } = req.query as {
-        doc: string
-        reactiveUpdate: string
-        id?: string
-      }
+      const { reactiveUpdate: reactiveUpdateString = 'true', id } =
+        req.query as {
+          doc: string
+          reactiveUpdate: string
+          id?: string
+        }
 
       const { doc: docData } = req.body as {
         doc: Record<string, any>
@@ -432,7 +404,7 @@ export class MemsDBServer {
       const doc = collection.insert({
         doc: docObject,
         reactiveUpdate,
-        id
+        id,
       })
       /* DEBUG */ _('Finished inserting document')
 
@@ -625,13 +597,47 @@ export class MemsDBServer {
         })
       }
 
-
       const dataKeys = Object.keys(docData)
       /**
        * Set the document keys to the specified data from the body of the request
        */
       /* DEBUG */ _('Setting document data')
-      dataKeys.forEach(key => doc.set(key, docData[key]))
+      dataKeys.forEach(key => {
+        switch (key as '$__inc' | '$__dec' | '$__push' | '$__merge' | string) {
+          case '$__inc':
+          case '$__dec': {
+            const obj = docData[key]
+
+            Object.keys(obj).forEach(innerKey => {
+              doc.set(
+                innerKey,
+                key === '$__inc'
+                  ? doc.data[innerKey] + obj[innerKey]
+                  : doc.data[innerKey] - obj[innerKey]
+              )
+            })
+            break
+          }
+
+          case '$__push':
+          case '$__merge': {
+            const obj = docData[key]
+
+            Object.keys(obj).forEach(innerKey => {
+              doc.set(
+                innerKey,
+                key === '$__push'
+                  ? [...doc.data[innerKey], obj[innerKey]]
+                  : [...doc.data[innerKey], ...obj[innerKey]]
+              )
+            })
+          }
+
+          default:
+            doc.set(key, docData[key])
+            break
+        }
+      })
       /* DEBUG */ _('Finished setting %d keys', dataKeys.length)
 
       /**
@@ -1019,14 +1025,14 @@ export class MemsDBServer {
 
     try {
       const sort = JSON.parse(sortStr)
-  
+
       Array.isArray(sort) &&
         sort.forEach(obj => {
           const { key, sort = 'DESC' } = obj as {
             key: string
             sort: 'DESC' | 'ASC'
           }
-  
+
           docs.sort((a, b) => {
             let aVal, bVal
             switch (key) {
@@ -1041,12 +1047,18 @@ export class MemsDBServer {
                 bVal = b.data[key]
                 break
             }
-  
-            return sort === 'DESC' ? (aVal < bVal ? 1 : -1) : aVal > bVal ? 1 : -1
+
+            return sort === 'DESC'
+              ? aVal < bVal
+                ? 1
+                : -1
+              : aVal > bVal
+              ? 1
+              : -1
           })
         })
-    } catch (err) {
-      errors.push('Failed to parse sort array')
+    } catch (_) {
+      /** ignore */
     }
 
     limitIsNan && errors.push('Limit is not a number')
@@ -1106,13 +1118,12 @@ export class MemsDBServer {
       }
     }
 
-
     /* DEBUG */ _('Retrieving specified slice from collection')
     const queries = []
 
     if (parsedQuery) {
-        if (Array.isArray(parsedQuery)) queries.push(...parsedQuery)
-        else queries.push(parsedQuery)
+      if (Array.isArray(parsedQuery)) queries.push(...parsedQuery)
+      else queries.push(parsedQuery)
     }
 
     const filtered = collection.find({
@@ -1338,5 +1349,36 @@ export class MemsDBServer {
       return true
 
     return false
+  }
+
+  createAuthUser(password = v4()) {
+    const _ = this._.extend('createAuthToken')
+    /* DEBUG */ _('Finding root user account')
+    const col = this.db.collection('<plugin:http>auth') as DBCollection<Auth>
+    const [rootUser] = col.find({
+      queries: QueryBuilder.where('username', '===', 'root').queries,
+    })
+    // If no root user was found, create one
+    if (!rootUser) {
+      /* DEBUG */ _('root user not found, creating new user')
+
+      /* DEBUG */ _('Generating salt for root user')
+      const salt = randomBytes(256).toString('base64')
+
+      /* DEBUG */ _(
+        'Inserting user "root". Note down the password: %s',
+        password
+      )
+      col.insert({
+        doc: {
+          username: 'root',
+          salt,
+          hash: MemsDBServer.saltHashString(password, salt),
+          acl: ['*/*'],
+          allowedTokens: 0,
+          type: 'password',
+        } as Auth,
+      })
+    }
   }
 }

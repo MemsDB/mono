@@ -22,7 +22,7 @@ export class MemsDBServer {
                 this.registerCollection(collection);
             }),
         ];
-        const { port = 16055, secret = v4(), rootPassword = v4(), tokenExpiry = 86400, requireAuth = 'all', } = opts;
+        const { port = 16055, secret = v4(), tokenExpiry = 86400, requireAuth = 'all', } = opts;
         // Initialise debugger variable
         const _ = (this._ = db.db_.extend(`<plugin>http`));
         this.db = db;
@@ -45,7 +45,7 @@ export class MemsDBServer {
         this.app.use(json());
         // Create internal collections for things like Auth and tokens
         /* DEBUG */ _('Creating internal auth collection');
-        const authCollection = new DBCollection(db, {
+        new DBCollection(db, {
             name: '<plugin:http>auth',
             structure: {
                 acl: [],
@@ -66,25 +66,6 @@ export class MemsDBServer {
                 valid: true,
             },
         });
-        /* DEBUG */ _('Finding root user account');
-        const [rootUser] = authCollection.find(QueryBuilder.where('username', '===', 'root'));
-        // If no root user was found, create one
-        if (!rootUser) {
-            /* DEBUG */ _('root user not found, creating new user');
-            /* DEBUG */ _('Generating salt for root user');
-            const salt = randomBytes(256).toString('base64');
-            /* DEBUG */ _('Inserting user "root". Note down the password: %s', rootPassword);
-            authCollection.insert({
-                doc: {
-                    username: 'root',
-                    salt,
-                    hash: MemsDBServer.saltHashString(rootPassword, salt),
-                    acl: ['*/*'],
-                    allowedTokens: 0,
-                    type: 'password',
-                },
-            });
-        }
         // Register internal authentication routes
         this.registerAuthRoutes();
         // Register collections for handling collection additions
@@ -182,7 +163,7 @@ export class MemsDBServer {
                 limit,
                 populateQuery,
                 populateFilterUnspecified,
-                total: populateSlice.length,
+                total: findTotal,
                 query: findQueries,
                 errors: [],
             };
@@ -223,7 +204,7 @@ export class MemsDBServer {
             const doc = collection.insert({
                 doc: docObject,
                 reactiveUpdate,
-                id
+                id,
             });
             /* DEBUG */ _('Finished inserting document');
             const responseObj = {
@@ -347,7 +328,32 @@ export class MemsDBServer {
              * Set the document keys to the specified data from the body of the request
              */
             /* DEBUG */ _('Setting document data');
-            dataKeys.forEach(key => doc.set(key, docData[key]));
+            dataKeys.forEach(key => {
+                switch (key) {
+                    case '$__inc':
+                    case '$__dec': {
+                        const obj = docData[key];
+                        Object.keys(obj).forEach(innerKey => {
+                            doc.set(innerKey, key === '$__inc'
+                                ? doc.data[innerKey] + obj[innerKey]
+                                : doc.data[innerKey] - obj[innerKey]);
+                        });
+                        break;
+                    }
+                    case '$__push':
+                    case '$__merge': {
+                        const obj = docData[key];
+                        Object.keys(obj).forEach(innerKey => {
+                            doc.set(innerKey, key === '$__push'
+                                ? [...doc.data[innerKey], obj[innerKey]]
+                                : [...doc.data[innerKey], ...obj[innerKey]]);
+                        });
+                    }
+                    default:
+                        doc.set(key, docData[key]);
+                        break;
+                }
+            });
             /* DEBUG */ _('Finished setting %d keys', dataKeys.length);
             /**
              * Populate the document so as to remove keys, user must pass in a
@@ -607,12 +613,18 @@ export class MemsDBServer {
                                 bVal = b.data[key];
                                 break;
                         }
-                        return sort === 'DESC' ? (aVal < bVal ? 1 : -1) : aVal > bVal ? 1 : -1;
+                        return sort === 'DESC'
+                            ? aVal < bVal
+                                ? 1
+                                : -1
+                            : aVal > bVal
+                                ? 1
+                                : -1;
                     });
                 });
         }
-        catch (err) {
-            errors.push('Failed to parse sort array');
+        catch (_) {
+            /** ignore */
         }
         limitIsNan && errors.push('Limit is not a number');
         limitLTOne && errors.push('Limit less than 1');
@@ -821,6 +833,31 @@ export class MemsDBServer {
         if (auth && (auth.acl.includes('*/*') || auth.acl.includes(required)))
             return true;
         return false;
+    }
+    createAuthUser(password = v4()) {
+        const _ = this._.extend('createAuthToken');
+        /* DEBUG */ _('Finding root user account');
+        const col = this.db.collection('<plugin:http>auth');
+        const [rootUser] = col.find({
+            queries: QueryBuilder.where('username', '===', 'root').queries,
+        });
+        // If no root user was found, create one
+        if (!rootUser) {
+            /* DEBUG */ _('root user not found, creating new user');
+            /* DEBUG */ _('Generating salt for root user');
+            const salt = randomBytes(256).toString('base64');
+            /* DEBUG */ _('Inserting user "root". Note down the password: %s', password);
+            col.insert({
+                doc: {
+                    username: 'root',
+                    salt,
+                    hash: MemsDBServer.saltHashString(password, salt),
+                    acl: ['*/*'],
+                    allowedTokens: 0,
+                    type: 'password',
+                },
+            });
+        }
     }
 }
 /**

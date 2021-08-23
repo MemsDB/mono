@@ -30,8 +30,6 @@ export declare class MemsDBServer {
         port?: number;
         /** JWT signing secret */
         secret?: Secret;
-        /** Password for the root user */
-        rootPassword?: string;
         /** How long a JWT token should stay active for (in seconds) */
         tokenExpiry?: number;
         /** Require Auth */
@@ -71,4 +69,5 @@ export declare class MemsDBServer {
     private createAuthToken;
     private static saltHashString;
     private testACL;
+    createAuthUser(password?: string): void;
 }
